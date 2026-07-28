@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Login | MSc Memories</title>
+
+	<!-- FontAwesome for Icons -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="styleSheet" href="/css/toast.css">
+	<style>
+		:root {
+			--primary: #FFD700;
+			--primary-hover: #e6c200;
+			--text: #ffffff;
+			--text-muted: #94a3b8;
+			--bg: #0f172a;
+			--card: #1e293b;
+			--border: #334155;
+			--glass: rgba(15, 23, 42, 0.85);
+			--header-h: 60px;
+			--sidebar-w: 180px;
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		}
+
+		body {
+			background-color: var(--bg);
+			color: var(--text);
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			padding-top: var(--header-h);
+		}
+
+		/* GLASSY HEADER */
+		header.glass-header {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: var(--header-h);
+			background: var(--glass);
+			backdrop-filter: blur(12px);
+			-webkit-backdrop-filter: blur(12px);
+			border-bottom: 1px solid var(--border);
+			display: flex;
+			align-items: center;
+			padding: 0 2rem;
+			z-index: 1000;
+		}
+
+		.header-brand {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			text-decoration: none;
+			color: var(--text);
+		}
+
+		.header-brand i.logo-icon {
+			color: var(--primary);
+			font-size: 1.5rem;
+		}
+
+		.header-brand span {
+			font-size: 1.25rem;
+			font-weight: 700;
+			letter-spacing: 0.5px;
+			text-transform: uppercase;
+		}
+
+		.header-brand span span {
+			color: var(--primary);
+		}
+
+		/* MAIN CARD CONTAINER */
+		.auth-container {
+			width: 100%;
+			max-width: 440px;
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 16px;
+			padding: 2.5rem;
+			box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+			margin: 2rem 1rem;
+		}
+
+		.auth-header {
+			text-align: center;
+			margin-bottom: 2rem;
+		}
+
+		.auth-header h2 {
+			font-size: 1.75rem;
+			margin-bottom: 0.5rem;
+			color: var(--text);
+		}
+
+		.auth-header p {
+			color: var(--text-muted);
+			font-size: 0.9rem;
+		}
+
+		/* ALERTS */
+		.alert {
+			padding: 0.75rem 1rem;
+			border-radius: 8px;
+			font-size: 0.875rem;
+			margin-bottom: 1.5rem;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.alert-error {
+			background: rgba(239, 68, 68, 0.15);
+			border: 1px solid #ef4444;
+			color: #fca5a5;
+		}
+
+		.alert-success {
+			background: rgba(34, 197, 94, 0.15);
+			border: 1px solid #22c55e;
+			color: #86efac;
+		}
+
+		/* FORM FIELD STYLES */
+		.form-group {
+			margin-bottom: 1.25rem;
+		}
+
+		.form-group label {
+			display: block;
+			font-size: 0.85rem;
+			color: var(--text-muted);
+			margin-bottom: 0.5rem;
+			font-weight: 500;
+		}
+
+		.input-wrapper {
+			position: relative;
+			display: flex;
+			align-items: center;
+		}
+
+		.input-wrapper i.field-icon {
+			position: absolute;
+			left: 1rem;
+			color: var(--text-muted);
+			font-size: 1rem;
+		}
+
+		.input-wrapper input {
+			width: 100%;
+			padding: 0.8rem 1rem 0.8rem 2.75rem;
+			background: var(--bg);
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			color: var(--text);
+			font-size: 0.95rem;
+			outline: none;
+			transition: border-color 0.2s ease, box-shadow 0.2s ease;
+		}
+
+		.input-wrapper input:focus {
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+		}
+
+		/* TOGGLE PASSWORD ICON */
+		.toggle-password {
+			position: absolute;
+			right: 1rem;
+			color: var(--text-muted);
+			cursor: pointer;
+			transition: color 0.2s ease;
+		}
+
+		.toggle-password:hover {
+			color: var(--primary);
+		}
+
+		/* BUTTON STYLES */
+		.btn-submit {
+			width: 100%;
+			padding: 0.85rem;
+			background: var(--primary);
+			color: #000000;
+			border: none;
+			border-radius: 8px;
+			font-size: 1rem;
+			font-weight: 700;
+			cursor: pointer;
+			transition: background-color 0.2s ease, transform 0.1s ease;
+			margin-top: 0.5rem;
+		}
+
+		.btn-submit:hover {
+			background: var(--primary-hover);
+		}
+
+		.btn-submit:active {
+			transform: scale(0.99);
+		}
+
+		/* FORGOT PASSWORD SWITCH FOOTER */
+		.auth-footer {
+			margin-top: 1.5rem;
+			text-align: center;
+		}
+
+		.auth-footer a {
+			color: var(--primary);
+			text-decoration: none;
+			font-size: 0.875rem;
+			font-weight: 500;
+			transition: opacity 0.2s;
+			cursor: pointer;
+		}
+
+		.auth-footer a:hover {
+			text-decoration: underline;
+		}
+
+		/* UTILITY FOR TOGGLING FORMS */
+		.hidden {
+			display: none !important;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="toast-container"></div>
+	<!-- GLASSY HEADER -->
+	<header class="glass-header">
+		<a href="#" class="header-brand">
+			<i class="fa-solid fa-camera-retro logo-icon"></i>
+			<span>MSc <span>Memories</span></span>
+		</a>
+	</header>
+
+	<!-- AUTH CARD CONTAINER -->
+	<div class="auth-container">
+
+		<!-- Dynamic Alert Container for JS messaging -->
+		<div id="dynamicAlert" class="alert hidden">
+			<i id="alertIcon" class="fa-solid"></i>
+			<span id="alertMessage"></span>
+		</div>
+
+		<!-- ================= 1. LOGIN FORM ================= -->
+		<div id="loginSection">
+			<div class="auth-header">
+				<h2>Welcome Back</h2>
+				<p>Enter your details to access student memories</p>
+			</div>
+
+			<!-- Error Notification from Spring Security -->
+			<div th:if="${param.error}" class="alert alert-error">
+				<i class="fa-solid fa-circle-exclamation"></i>
+				<span>Invalid credentials or password.</span>
+			</div>
+
+			<!-- Logout Success Message -->
+			<div th:if="${param.logout}" class="alert alert-success">
+				<i class="fa-solid fa-circle-check"></i>
+				<span>Logged out successfully.</span>
+			</div>
+
+			<form id="loginForm" onsubmit="handleLoginSubmit(event)">
+			    <div class="form-group">
+			        <label for="username">Registration No, Username, or Email</label>
+			        <div class="input-wrapper">
+			            <i class="fa-solid fa-id-card field-icon"></i>
+			            <input type="text" id="username" name="username" placeholder="e.g. 2201001 or student@univ.edu"
+			                required autofocus />
+			        </div>
+			    </div>
+
+			    <div class="form-group">
+			        <label for="password">Password</label>
+			        <div class="input-wrapper">
+			            <i class="fa-solid fa-lock field-icon"></i>
+			            <input type="password" id="password" name="password" placeholder="••••••••" required />
+			            <i class="fa-solid fa-eye toggle-password" id="toggleLoginPassword"></i>
+			        </div>
+			    </div>
+
+			    <button type="submit" id="btnLoginSubmit" class="btn-submit">Sign In</button>
+
+			    <div class="auth-footer">
+			        <a onclick="showForgotPassword()">Forgot your password?</a>
+			    </div>
+			</form>
+		</div>
+
+		<!-- ================= 2. FORGOT PASSWORD (STEP 1: REQUEST OTP) ================= -->
+		<div id="forgotPasswordSection" class="hidden">
+			<div class="auth-header">
+				<h2>Reset Password</h2>
+				<p>Verify your details to receive an OTP code</p>
+			</div>
+
+			<form id="forgotForm" onsubmit="handleGenerateOtp(event)">
+				<div class="form-group">
+					<label for="resetRegNo">Registration Number</label>
+					<div class="input-wrapper">
+						<i class="fa-solid fa-hashtag field-icon"></i>
+						<input type="text" id="resetRegNo" name="registrationNumber"
+							placeholder="Enter Registration Number" required />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="resetEmail">Registered Email</label>
+					<div class="input-wrapper">
+						<i class="fa-solid fa-envelope field-icon"></i>
+						<input type="email" id="resetEmail" name="email" placeholder="student@univ.edu" required />
+					</div>
+				</div>
+
+				<button type="submit" id="btnSendOtp" class="btn-submit">Send OTP Code</button>
+
+				<div class="auth-footer">
+					<a onclick="showLogin()"><i class="fa-solid fa-arrow-left"></i> Back to Login</a>
+				</div>
+			</form>
+		</div>
+
+		<!-- ================= 3. VERIFY OTP & RESET PASSWORD (STEP 2) ================= -->
+		<div id="verifyOtpSection" class="hidden">
+			<div class="auth-header">
+				<h2>Verify OTP</h2>
+				<p>Enter the 6-digit code sent to your email</p>
+			</div>
+
+			<form id="verifyForm" onsubmit="handleVerifyOtp(event)">
+				<div class="form-group">
+					<label for="otpCode">6-Digit OTP</label>
+					<div class="input-wrapper">
+						<i class="fa-solid fa-key field-icon"></i>
+						<input type="text" id="otpCode" name="enteredOtp" placeholder="123456" maxlength="6" required />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="newPassword">New Password</label>
+					<div class="input-wrapper">
+						<i class="fa-solid fa-lock field-icon"></i>
+						<input type="password" id="newPassword" name="newPassword" placeholder="••••••••" required />
+						<i class="fa-solid fa-eye toggle-password" id="toggleNewPassword"></i>
+					</div>
+				</div>
+
+				<button type="submit" id="btnResetPassword" class="btn-submit">Update Password</button>
+
+				<div class="auth-footer">
+					<a onclick="showForgotPassword()"><i class="fa-solid fa-arrow-left"></i> Resend OTP</a>
+				</div>
+			</form>
+		</div>
+
+	</div>
+	<script src="/js/toast.js"></script>
+
+	<!-- JAVASCRIPT FOR TOGGLES & AJAX -->
+	<script>
+		// 1. Password Visibility Toggles
+		const setupPasswordToggle = (toggleId, inputId) => {
+			const toggleIcon = document.getElementById(toggleId);
+			const inputField = document.getElementById(inputId);
+			if (toggleIcon && inputField) {
+				toggleIcon.addEventListener('click', function () {
+					const isPassword = inputField.getAttribute('type') === 'password';
+					inputField.setAttribute('type', isPassword ? 'text' : 'password');
+					this.classList.toggle('fa-eye');
+					this.classList.toggle('fa-eye-slash');
+				});
+			}
+		};
+
+		setupPasswordToggle('toggleLoginPassword', 'password');
+		setupPasswordToggle('toggleNewPassword', 'newPassword');
+
+		// 2. Alert System Helpers
+		function showAlert(message, isSuccess = false) {
+			const alertBox = document.getElementById('dynamicAlert');
+			const alertIcon = document.getElementById('alertIcon');
+			const alertMsg = document.getElementById('alertMessage');
+
+			alertBox.className = `alert ${isSuccess ? 'alert-success' : 'alert-error'}`;
+			alertIcon.className = `fa-solid ${isSuccess ? 'fa-circle-check' : 'fa-circle-exclamation'}`;
+			alertMsg.textContent = message;
+			alertBox.classList.remove('hidden');
+		}
+
+		function hideAlert() {
+			document.getElementById('dynamicAlert').classList.add('hidden');
+		}
+
+		// 3. View Switchers
+		function showForgotPassword() {
+			hideAlert();
+			document.getElementById('loginSection').classList.add('hidden');
+			document.getElementById('verifyOtpSection').classList.add('hidden');
+			document.getElementById('forgotPasswordSection').classList.remove('hidden');
+		}
+
+		function showLogin() {
+			hideAlert();
+			document.getElementById('forgotPasswordSection').classList.add('hidden');
+			document.getElementById('verifyOtpSection').classList.add('hidden');
+			document.getElementById('loginSection').classList.remove('hidden');
+		}
+
+		function showVerifyOtp() {
+			hideAlert();
+			document.getElementById('forgotPasswordSection').classList.add('hidden');
+			document.getElementById('loginSection').classList.add('hidden');
+			document.getElementById('verifyOtpSection').classList.remove('hidden');
+		}
+		// AJAX Login Handler
+		async function handleLoginSubmit(e) {
+		    e.preventDefault();
+		    hideAlert();
+
+		    const btn = document.getElementById('btnLoginSubmit');
+		    btn.disabled = true;
+		    btn.textContent = 'Authenticating...';
+
+		    const formData = new URLSearchParams();
+		    formData.append('username', document.getElementById('username').value);
+		    formData.append('password', document.getElementById('password').value);
+
+		    try {
+		        const response = await fetch('/login', {
+		            method: 'POST',
+		            headers: {
+		                'Content-Type': 'application/x-www-form-urlencoded'
+		            },
+		            body: formData.toString()
+		        });
+
+		        const data = await response.json();
+
+		        if (response.ok && data.status === 'success') {
+		            showToast('Login Successful! Redirecting...', true);
+		            setTimeout(() => {
+		                // Dynamic redirect based on server response (/admin-dashboard or /dashboard)
+		                window.location.href = data.redirectUrl;
+		            }, 800);
+		        } else {
+		            showToast(data.message || 'Invalid credentials or password.');
+		        }
+		    } catch (err) {
+		        showToast('Network error. Please try again later.');
+		    } finally {
+		        btn.disabled = false;
+		        btn.textContent = 'Sign In';
+		    }
+		}
+
+		// 4. AJAX: Submit Request OTP
+		async function handleGenerateOtp(e) {
+			e.preventDefault();
+			hideAlert();
+
+			const btn = document.getElementById('btnSendOtp');
+			btn.disabled = true;
+			btn.textContent = 'Sending OTP...';
+
+			const regNo = document.getElementById('resetRegNo').value;
+			const email = document.getElementById('resetEmail').value;
+
+			try {
+				const response = await fetch(`/generate-otp?registrationNumber=${encodeURIComponent(regNo)}&email=${encodeURIComponent(email)}`, {
+					method: 'POST'
+				});
+
+				const data = await response.json();
+
+				if (response.ok) {
+					showToast(data.message || 'OTP sent successfully!', true);
+					setTimeout(() => showVerifyOtp(), 1200);
+				} else {
+					showToast(data.message || 'Error generating OTP code.');
+				}
+			} catch (err) {
+				showToast('Network error. Please try again later.');
+			} finally {
+				btn.disabled = false;
+				btn.textContent = 'Send OTP Code';
+			}
+		}
+
+		// 5. AJAX: Verify OTP & Update Password
+		async function handleVerifyOtp(e) {
+			e.preventDefault();
+			hideAlert();
+
+			const btn = document.getElementById('btnResetPassword');
+			btn.disabled = true;
+			btn.textContent = 'Updating...';
+
+			const regNo = document.getElementById('resetRegNo').value;
+			const enteredOtp = document.getElementById('otpCode').value;
+			const newPassword = document.getElementById('newPassword').value;
+
+			try {
+				const response = await fetch(`/verify-otp?registrationNumber=${encodeURIComponent(regNo)}&enteredOtp=${encodeURIComponent(enteredOtp)}&newPassword=${encodeURIComponent(newPassword)}`, {
+					method: 'POST'
+				});
+
+				const data = await response.json();
+
+				if (response.ok) {
+					showToast('Password updated successfully! Redirecting to login...', true);
+					setTimeout(() => showLogin(), 1500);
+				} else {
+					showToast(data.message || 'Invalid or expired OTP.');
+				}
+			} catch (err) {
+				showToast('Network error. Please try again later.');
+			} finally {
+				btn.disabled = false;
+				btn.textContent = 'Update Password';
+			}
+		}
+	</script>
+</body>
+
+</html>

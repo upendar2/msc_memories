@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | MSc Memories</title>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        :root {
+            --primary: #FFD700;
+            --primary-hover: #e6c200;
+            --text: #ffffff;
+            --text-muted: #94a3b8;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --border: #334155;
+            --glass: rgba(15, 23, 42, 0.85);
+            --success: #22c55e;
+            --header-h: 60px;
+            --sidebar-w: 240px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* SIDEBAR STYLES */
+        aside.sidebar {
+            width: var(--sidebar-w);
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            z-index: 1001;
+        }
+
+        .sidebar-brand {
+            height: var(--header-h);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            border-bottom: 1px solid var(--border);
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            text-transform: uppercase;
+            gap: 10px;
+        }
+
+        .sidebar-brand i {
+            color: var(--primary);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1.5rem 0;
+            flex-grow: 1;
+        }
+
+        .sidebar-item a {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            gap: 12px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-item a:hover, .sidebar-item.active a {
+            color: var(--text);
+            background: rgba(255, 215, 0, 0.05);
+            border-left: 4px solid var(--primary);
+        }
+
+        .sidebar-item.active a i {
+            color: var(--primary);
+        }
+
+        /* MAIN CONTENT SECTION */
+        main.main-content {
+            margin-left: var(--sidebar-w);
+            width: calc(100% - var(--sidebar-w));
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* GLASSY HEADER */
+        header.dashboard-header {
+            height: var(--header-h);
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 1rem;
+            color: var(--text-muted);
+        }
+
+        .search-wrapper input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            border-radius: 6px;
+            outline: none;
+            width: 250px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .user-profile i {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        /* CONTENT CONTAINER */
+        .content-body {
+            padding: 2rem;
+            flex-grow: 1;
+        }
+
+        .welcome-sec {
+            margin-bottom: 2rem;
+        }
+
+        .welcome-sec h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        .welcome-sec p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* METRIC STAT CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-details h3 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-details span {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        /* RECENT ACTIVITY TABLE */
+        .table-container {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .table-container h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1.2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            font-size: 0.95rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* RESPONSIVE LAYOUT BREAKPOINT */
+        @media (max-width: 768px) {
+            aside.sidebar { width: 70px; }
+            aside.sidebar .sidebar-brand span, 
+            aside.sidebar .sidebar-item span { display: none; }
+            main.main-content { margin-left: 70px; width: calc(100% - 70px); }
+            header.dashboard-header .search-wrapper { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <a href="#" class="sidebar-brand">
+            <i class="fa-solid fa-camera-retro"></i>
+            <span>MSc Admin</span>
+        </a>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item active">
+                <a href="#"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#"><i class="fa-solid fa-users"></i> <span>Students</span></a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#"><i class="fa-solid fa-images"></i> <span>Memories</span></a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#"><i class="fa-solid fa-gear"></i> <span>Settings</span></a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- MAIN INTERFACE -->
+    <main class="main-content">
+        <!-- HEADER -->
+        <header class="dashboard-header">
+            <div class="search-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search logs, entries...">
+            </div>
+            <div class="user-profile">
+                <span>Admin User</span>
+                <i class="fa-solid fa-circle-user"></i>
+            </div>
+        </header>
+
+        <!-- DASHBOARD BODY -->
+        <div class="content-body">
+            <div class="welcome-sec">
+                <h1>Dashboard Overview</h1>
+                <p>Monitor metrics, pending registration configurations, and system health status.</p>
+            </div>
+
+            <!-- ANALYTICS CARDS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-details">
+                        <h3>Total Students</h3>
+                        <span>1,248</span>
+                    </div>
+                    <div class="stat-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-details">
+                        <h3>Photos Uploaded</h3>
+                        <span>4,812</span>
+                    </div>
+                    <div class="stat-icon"><i class="fa-solid fa-image"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-details">
+                        <h3>Active Sessions</h3>
+                        <span>42</span>
+                    </div>
+                    <div class="stat-icon"><i class="fa-solid fa-bolt"></i></div>
+                </div>
+            </div>
+
+            <!-- LOG ENTRIES TABLE -->

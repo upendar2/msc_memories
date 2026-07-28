@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard | MSc Memories</title>
+    
+    <!-- FontAwesome & Toast CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/toast.css">
+
+    <style>
+        :root {
+            --primary: #FFD700;
+            --primary-hover: #e6c200;
+            --text: #ffffff;
+            --text-muted: #94a3b8;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --border: #334155;
+            --glass: rgba(15, 23, 42, 0.85);
+            --header-h: 60px;
+            --sidebar-w: 220px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* GLASSY HEADER */
+        header.glass-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-h);
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 1000;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .header-brand i.logo-icon {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .header-brand span {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .header-brand span span {
+            color: var(--primary);
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-badge {
+            background: rgba(51, 65, 85, 0.5);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+
+        /* DASHBOARD LAYOUT */
+        .app-layout {
+            display: flex;
+            margin-top: var(--header-h);
+            min-height: calc(100vh - var(--header-h));
+        }
+
+        /* SIDEBAR */
+        aside.sidebar {
+            width: var(--sidebar-w);
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: fixed;
+            top: var(--header-h);
+            bottom: 0;
+            left: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 215, 0, 0.05);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: #000000;
+            font-weight: 700;
+        }
+
+        /* MAIN CONTENT AREA */
+        main.main-content {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* USER PROFILE CARD */
+        .profile-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .profile-item label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-item p {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* UPLOAD PIPELINE STYLES */
+        .upload-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .btn-action {
+            padding: 0.6rem 1.2rem;
+            background: var(--primary);
+            color: #000000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+
+        .btn-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .upload-warning-banner {
+            display: none;
+            background: rgba(234, 179, 8, 0.15);
+            border: 1px solid #eab308;
+            color: #fef08a;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .drop-zone {
+            background: var(--card);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: var(--primary);
+            background: rgba(255, 215, 0, 0.02);
+        }
+
+        .drop-zone.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .upload-huge-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .drop-zone h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .drop-zone p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .drop-zone p span {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        .drop-zone small {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .upload-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+        }
+
+        .batch-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .batch-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .batch-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .batch-status {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            text-transform: capitalize;
+            font-weight: 600;
+        }
+
+        .batch-status.waiting { background: #334155; color: var(--text-muted); }
+        .batch-status.processing { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+        .batch-status.completed { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            transition: width 0.2s ease;
+        }
+
+        /* GALLERY & PAGINATION STYLES */
+        .content-layout {
+            display: flex;
+            gap: 30px;
+        }
+
+        .gallery-column {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-bar-wrap {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .search-bar-wrap input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 22px;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .toolbar select {
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            outline: none;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .img-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .img-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+        }
+
+        .img-thumb {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .img-meta {
+            padding: 12px;
+        }
+
+        .img-meta .name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .img-meta .details {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .img-actions {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .pagination button.active {
+            background: var(--primary);
+            color: #000;
+            font-weight: 700;
+            border-color: var(--primary);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ==========================================================
+           PROFESSIONAL IMAGE VIEWER MODAL STYLES
+        ========================================================== */
+        .image-viewer {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 15, 29, 0.96);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            user-select: none;
+            overflow: hidden;
+            animation: fadeInViewer 0.25s ease-out;
+        }
+
+        @keyframes fadeInViewer {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .viewer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        .viewer-center {
+            text-align: center;
+        }
+
+        .viewer-center h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .viewer-center span {
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .viewer-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .viewer-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .viewer-btn.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .viewer-btn.danger:hover {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        .viewer-stage {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            padding: 1rem;
+            overflow: hidden;
+        }
+
+        .viewer-nav {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border);
+            color: #fff;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .viewer-nav:hover:not(:disabled) {
+            background: var(--primary);
+            color: #000;
+            transform: scale(1.1);
+        }
+
+        .viewer-nav:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
+
+        .viewer-image-wrapper {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viewer-image-wrapper img {
+            max-width: 90%;
+            max-height: 75vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            transition: transform 0.15s ease-out, opacity 0.2s ease;
+            cursor: grab;
+        }
+
+        .viewer-skeleton {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spinSkeleton 0.8s linear infinite;
+        }
+
+        @keyframes spinSkeleton {
+            to { transform: rotate(360deg); }
+        }
+
+        .thumbnail-section {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: rgba(15, 23, 42, 0.85);
+            border-top: 1px solid var(--border);
+            gap: 10px;
+        }
+
+        .thumb-nav {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .thumbnail-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 4px 0;
+            flex: 1;
+        }
+
+        .thumbnail-container::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .thumbnail-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .thumbnail {
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: all 0.2s;
+        }
+
+        .thumbnail.active {
+            border-color: var(--primary);
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- GLASSY HEADER -->
+    <header class="glass-header">
+        <a href="#" class="header-brand">
+            <i class="fa-solid fa-camera-retro logo-icon"></i>
+            <span>MSc <span>Memories</span></span>
+        </a>
+        <div class="header-user">
+            <div class="user-badge">
+                <i class="fa-solid fa-user-graduate"></i>
+                <span id="headerRegNo">Loading...</span>
+            </div>
+            <button class="btn-logout" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="nav-item active" onclick="switchTab('homeSection', this)">
+                <i class="fa-solid fa-house"></i> Dashboard
+            </div>
+            <div class="nav-item" onclick="switchTab('gallerySection', this)">
+                <i class="fa-solid fa-images"></i> My Gallery
+            </div>
+            <div class="nav-item" onclick="switchTab('uploadSection', this)">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Upload Images
+            </div>
+            <div class="nav-item" onclick="switchTab('profileSection', this)">
+                <i class="fa-solid fa-id-card"></i> Student Profile
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- ================= 1. HOME / OVERVIEW SECTION ================= -->
+            <section id="homeSection" class="page-section active">
+                <h1 style="margin-bottom: 0.5rem;">Welcome, <span id="welcomeName">Student</span>!</h1>
+                <p style="color: var(--text-muted); margin-bottom: 2rem;">Manage your project gallery and memory uploads.</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
+                    <div class="profile-card">
+                        <h3><i class="fa-solid fa-images" style="color: var(--primary);"></i> Gallery & Uploads</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.75rem 0 1.25rem 0;">Browse saved photos or upload new batches to your personal vault.</p>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-action" onclick="switchTab('gallerySection', document.querySelectorAll('.nav-item')[1])">
+                                View Gallery
+                            </button>
+                            <button class="btn-action" style="background: transparent; color: var(--text); border: 1px solid var(--border);" onclick="switchTab('uploadSection', document.querySelectorAll('.nav-item')[2])">
+                                Quick Upload
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= 2. PAGINATED GALLERY SECTION ================= -->
+            <section id="gallerySection" class="page-section">
+                <h1 style="margin-bottom: 0.5rem;">Photo Gallery</h1>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Browse and manage your uploaded memories.</p>
+
+                <div class="content-layout">
+                    <div class="gallery-column">
+                        <div class="search-bar-wrap">
+                            <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text" id="imageSearch" placeholder="Search by file name..." oninput="filterImages()">
+                            <div class="toolbar">
+                                <label for="pageSize">Show </label>
+                                <select id="pageSize" onchange="changePageSize(this.value)">
+                                    <option value="12">12</option>
+                                    <option value="24" selected>24</option>
+                                    <option value="48">48</option>
+                                </select>
+                                <span id="pageInfo"></span>
+                            </div>
+                        </div>
+
+                        <div id="image-grid" class="image-grid"></div>
+                        <div id="pagination" class="pagination"></div>
+
+                        <div id="empty-gallery" class="empty-state" style="display: none; text-align: center; padding: 3rem 1rem;">
+                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🖼️</div>
+                            <h2 style="font-size: 1.2rem; color: var(--text-muted);">No images found</h2>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= 3. USER PROFILE SECTION ================= -->
+            <section id="profileSection" class="page-section">
+                <h1 style="margin-bottom: 0.5rem;">Student Details</h1>
+                <p style="color: var(--text-muted); margin-bottom: 2rem;">Your registered academic credentials.</p>
+
+                <div class="profile-card">
+                    <div class="profile-grid">
+                        <div class="profile-item">
+                            <label>Full Name</label>
+                            <p id="profileName">Loading...</p>
+                        </div>
+                        <div class="profile-item">
+                            <label>Registration Number</label>
+                            <p id="profileRegNo">Loading...</p>
+                        </div>
+                        <div class="profile-item">
+                            <label>Email Address</label>
+                            <p id="profileEmail">Loading...</p>
+                        </div>
+                        <div class="profile-item">
+                            <label>Phone Number</label>
+                            <p id="profilePhone">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= 4. BATCH UPLOAD SECTION ================= -->
+            <section id="uploadSection" class="page-section">
+                <div class="upload-top-bar">
+                    <h1 id="event-name">Memory Batch Upload</h1>
+                    <div class="upload-actions">
+                        <button id="startUploadBtn" class="btn-action" onclick="startBatchPipeline()" disabled>
+                            🚀 Start Batch Upload
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ON-SCREEN WARNING MESSAGE -->
+                <div class="upload-warning-banner" id="uploadWarningBanner">
+                    ⏳ Multi-Batch Pipeline Active... Please do not refresh or close this page!
+                </div>
+
+                <div class="upload-container">
+                    <div class="drop-zone" id="dropZone">
+                        <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/webp" hidden>
+                        <div class="drop-zone-content" id="dropZoneContent">
+                            <div class="upload-huge-icon">📸</div>
+                            <h2>Drag & Drop Images</h2>
+                            <p>or <span>click to browse</span> from your computer</p>
+                            <small>JPG, PNG, WEBP • Handles thousands of files safely via Auto-Batching (100 files/batch)</small>
+                        </div>
+                    </div>
+
+                    <div class="upload-list-header" id="listHeader" style="display: none; margin-bottom: 12px;">
+                        <h3>Batch Queue Dashboard</h3>
+                        <span id="batch-count-tag" style="color: var(--primary); font-weight: 600;">0 Batches</span>
+                    </div>
+
+                    <div class="batch-dashboard" id="batchDashboard"></div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ==========================================================
+         PROFESSIONAL IMAGE VIEWER MODAL
+    =========================================================== -->
+    <div id="imageViewer" class="image-viewer" style="display:none;">
+        <!-- TOP BAR -->
+        <div class="viewer-header">
+            <div class="viewer-left">
+                <button id="downloadImageBtn" class="viewer-btn">⬇ Download</button>
+            </div>
+            <div class="viewer-center">
+                <h3 id="viewerFileName">Loading...</h3>
+                <span id="viewerCounter">1 / 1</span>
+            </div>
+            <div class="viewer-right">
+                <button id="closeViewerBtn" class="viewer-btn danger">✕ Close</button>
+            </div>
+        </div>
+
+        <!-- IMAGE STAGE -->
+        <div class="viewer-stage" id="viewerStage">
+            <button id="previousImageBtn" class="viewer-nav left">❮</button>
+            <div class="viewer-image-wrapper">
+                <div id="viewerSkeleton" class="viewer-skeleton"></div>
+                <img id="viewerImage" draggable="false" alt="Gallery Image">
+            </div>
+            <button id="nextImageBtn" class="viewer-nav right">❯</button>
+        </div>
+
+        <!-- THUMBNAIL STRIP -->
+        <div class="thumbnail-section">
+            <button id="thumbPrev" class="thumb-nav">◀</button>
+            <div id="thumbnailContainer" class="thumbnail-container">
+                <!-- JS Populated Thumbnails -->
+            </div>
+            <button id="thumbNext" class="thumb-nav">▶</button>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="/js/toast.js"></script>
+
+    <!-- CLIENT SCRIPT -->
+    <script>
+        const BATCH_SIZE = 100;
+        const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+
+        let allBatches = [];
+        let isUploading = false;
+
+        // Gallery Pagination State
+        let filteredImages = [];
+        let currentPage = 0;
+        let pageSize = 24;
+        let totalPages = 0;
+        let currentImageIndex = -1;
+        let isViewerOpen = false;
+
+        // Viewer Zoom & Drag State
+        let zoomScale = 1;
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let offsetX = 0, offsetY = 0;
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const batchDashboard = document.getElementById('batchDashboard');
+        const startBtn = document.getElementById('startUploadBtn');
+        const warningBanner = document.getElementById('uploadWarningBanner');
+
+        // Fetch Data On Page Load
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchUserProfile();
+            loadImages();
+            initializeViewerEvents();
+        });
+
+        async function fetchUserProfile() {
+            try {
+                const response = await fetch('/api/user/me', { method: 'GET' });
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const data = await response.json();
+                
+                // Populate DOM elements
+                document.getElementById('headerRegNo').textContent = data.registrationNumber || 'N/A';
+                document.getElementById('welcomeName').textContent = data.name || 'Student';
+                document.getElementById('profileName').textContent = data.name || 'N/A';
+                document.getElementById('profileRegNo').textContent = data.registrationNumber || 'N/A';
+                document.getElementById('profileEmail').textContent = data.email || 'N/A';
+                document.getElementById('profilePhone').textContent = data.phoneNumber || data.phone || 'N/A';
+            } catch (err) {
+                showToast("Failed to load user profile", "error");
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch('/logout', { method: 'POST' });
+                window.location.href = '/login.html?logout=true';
+            } catch (e) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        // Tab Switching
+        function switchTab(sectionId, navElem) {
+            if (isUploading) {
+                showToast("Upload in progress. Please stay on this tab until finished.", "error");
+                return;
+            }
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            if (navElem) navElem.classList.add('active');
+        }
+
+        /* ================= BATCH UPLOADER LOGIC ================= */
+        dropZone.onclick = () => { if (!isUploading) fileInput.click(); };
+        dropZone.ondragover = (e) => { e.preventDefault(); if (!isUploading) dropZone.classList.add('drag-over'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('drag-over');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            if (!isUploading) handleIncomingFiles(e.dataTransfer.files);
+        };
+
+        fileInput.onchange = (e) => {
+            handleIncomingFiles(e.target.files);
+            fileInput.value = "";
+        };
+
+        window.addEventListener('beforeunload', (e) => {
+            if (isUploading) {
+                e.preventDefault();
+                e.returnValue = 'Upload in progress. If you leave now, your uploads will be cancelled.';
+            }
+        });
+
+        function handleIncomingFiles(files) {
+            const incomingFiles = Array.from(files).filter(file => {
+                if (file.size > MAX_FILE_SIZE) {
+                    showToast(`Skipped ${file.name}: Exceeds 20MB limit.`, "error");
+                    return false;
+                }
+                return true;
+            });
+
+            if (incomingFiles.length === 0) return;
+
+            incomingFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+            allBatches = [];
+            for (let i = 0; i < incomingFiles.length; i += BATCH_SIZE) {
+                const chunk = incomingFiles.slice(i, i + BATCH_SIZE);
+                allBatches.push({
+                    id: `batch-${allBatches.length + 1}`,
+                    batchIndex: allBatches.length + 1,
+                    files: chunk,
+                    status: 'waiting',
+                    progress: 0
+                });
+            }
+
+            renderBatchDashboard();
+            document.getElementById('listHeader').style.display = 'flex';
+            startBtn.disabled = allBatches.length === 0;
+            showToast(`Loaded ${incomingFiles.length} file(s) into ${allBatches.length} batch(es).`, "success");
+        }
+
+        function renderBatchDashboard() {
+            batchDashboard.innerHTML = '';
+            allBatches.forEach(batch => {
+                const html = `
+                <div class="batch-card" id="${batch.id}">
+                    <div class="batch-header-row">
+                        <span class="batch-title">Batch ${batch.batchIndex} (${batch.files.length} files)</span>
+                        <span class="batch-status ${batch.status}" id="status-${batch.id}">${batch.status}</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-fill" id="bar-${batch.id}" style="width: ${batch.progress}%"></div>
+                    </div>
+                </div>`;
+                batchDashboard.insertAdjacentHTML('beforeend', html);
+            });
+            document.getElementById('batch-count-tag').innerText = `${allBatches.length} Batches Total`;
+        }
+
+        async function compressImage(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    
+                    let width = img.width;
+                    let height = img.height;
+                    const maxDim = 4096;
+
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.imageSmoothingQuality = "high";
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    canvas.toBlob((blob) => {
+                        const compressedFile = new File([blob], file.name, { type: "image/jpeg" });
+                        resolve(compressedFile);
+                    }, "image/jpeg", 0.95);
+                };
+
+                img.onerror = () => resolve(file);
+                img.src = url;
+            });
+        }
+
+        async function startBatchPipeline() {
+            if (isUploading || allBatches.length === 0) return;
+            
+            isUploading = true;
+            startBtn.disabled = true;
+            warningBanner.style.display = "block";
+            dropZone.classList.add('disabled');
+
+            for (let i = 0; i < allBatches.length; i++) {
+                const batch = allBatches[i];
+                batch.status = 'processing';
+                updateBatchUI(batch.id, 'processing', 'Processing...', 0);
+
+                let successCount = 0;
+                const totalFiles = batch.files.length;
+                const CONCURRENCY = 3;
+                const fileQueue = [...batch.files];
+
+                async function batchWorker() {
+                    while (fileQueue.length > 0) {
+                        const file = fileQueue.shift();
+                        try {
+                            const compressed = await compressImage(file);
+                            const success = await uploadSingleFile(compressed);
+                            if (success) successCount++;
+                        } catch (err) {
+                            console.error("Upload error:", err);
+                        }
+
+                        batch.progress = Math.round((successCount / totalFiles) * 100);
+                        updateBatchUI(batch.id, 'processing', `Uploading (${successCount}/${totalFiles})`, batch.progress);
+                    }
+                }
+
+                const workers = Array(Math.min(fileQueue.length, CONCURRENCY)).fill(0).map(batchWorker);
+                await Promise.all(workers);
+
+                batch.status = 'completed';
+                batch.progress = 100;
+                updateBatchUI(batch.id, 'completed', 'Completed ✅', 100);
+
+                batch.files = null; // Clear memory
+            }
+
+            isUploading = false;
+            warningBanner.style.display = "none";
+            showToast("All batches uploaded successfully!", "success");
+            dropZone.classList.remove('disabled');
+
+            // Refresh gallery gallery after upload completes
+            loadImages();
+        }
+
+        async function uploadSingleFile(file, retry = 0) {
+            return new Promise((resolve) => {
+                const formData = new FormData();
+                formData.append("file", file);
+
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", "/upload");
+
+                xhr.onload = () => {
+                    if (xhr.status === 200) {
+                        try {
+                            const res = JSON.parse(xhr.responseText);
+                            resolve(res.status === 'success');
+                        } catch (e) {
+                            handleRetry();
+                        }
+                    } else {
+                        handleRetry();
+                    }
+                };
+
+                xhr.onerror = () => handleRetry();
+
+                function handleRetry() {
+                    if (retry < 2) {
+                        setTimeout(() => {
+                            uploadSingleFile(file, retry + 1).then(resolve);
+                        }, 1000);
+                    } else {
+                        resolve(false);
+                    }
+                }
+
+                xhr.send(formData);
+            });
+        }
+
+        function updateBatchUI(id, status, text, percent) {
+            const label = document.getElementById(`status-${id}`);
+            const bar = document.getElementById(`bar-${id}`);
+            if (label) {
+                label.innerText = text;
+                label.className = `batch-status ${status}`;
+            }
+            if (bar) bar.style.width = percent + "%";
+        }
+
+        /* ================= GALLERY & PAGINATION LOGIC ================= */
+        async function loadImages() {
+            const searchInput = document.getElementById("imageSearch");
+            const search = searchInput ? searchInput.value : "";
+
+            try {
+                const res = await fetch(`/api/images?page=${currentPage}&size=${pageSize}&search=${encodeURIComponent(search)}`, {
+                    credentials: "include"
+                });
+                
+                if (!res.ok) throw new Error("Failed to load images");
+
+                const page = await res.json();
+                filteredImages = page.content;
+                totalPages = page.totalPages;
+
+                renderGrid();
+                renderPagination();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('image-grid');
+            const empty = document.getElementById('empty-gallery');
+
+            if (!grid) return;
+            grid.innerHTML = "";
+
+            if (filteredImages.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+
+            filteredImages.forEach((img, index) => {
+                const card = document.createElement('div');
+                card.className = 'img-card';
+                card.onclick = () => openViewer(index);
+
+                const thumbSrc = img.thumbnailUrl || img.imageUrl;
+                const fullSrc = img.imageUrl || img.thumbnailUrl;
+                const displayName = img.fileName || img.name || 'Untitled';
+
+                card.innerHTML = `
+                    <img class="img-thumb" loading="lazy" src="${thumbSrc}" alt="${displayName}">
+                    <div class="img-meta">
+                        <span class="name" title="${displayName}">${displayName}</span>
+                        <p class="details">${formatDateTime(img.uploadedAt)}</p>
+                        <div class="img-actions">
+                            <button class="btn-action" style="padding:0.35rem 0.7rem; font-size:0.75rem; width:100%; justify-content:center;" 
+                                    onclick="event.stopPropagation(); downloadImg('${fullSrc}', '${displayName}')">
+                                Download ↓
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function downloadImg(url, fileName) {
+            if (!url) return;
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = fileName || "image.jpg";
+            a.target = "_blank";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function renderPagination() {
+            const p = document.getElementById("pagination");
+            if (!p) return;
+
+            if (totalPages <= 1) {
+                p.innerHTML = "";
+                return;
+            }
+
+            let html = "";
+            html += `<button ${currentPage === 0 ? "disabled" : ""} onclick="goPage(0)">First</button>`;
+            html += `<button ${currentPage === 0 ? "disabled" : ""} onclick="goPage(${currentPage - 1})">Prev</button>`;
+
+            let start = Math.max(0, currentPage - 2);
+            let end = Math.min(totalPages - 1, currentPage + 2);
+
+            for (let i = start; i <= end; i++) {
+                html += `<button class="${i === currentPage ? "active" : ""}" onclick="goPage(${i})">${i + 1}</button>`;
+            }
+
+            html += `<button ${currentPage === totalPages - 1 ? "disabled" : ""} onclick="goPage(${currentPage + 1})">Next</button>`;
+            html += `<button ${currentPage === totalPages - 1 ? "disabled" : ""} onclick="goPage(${totalPages - 1})">Last</button>`;
+            
+            p.innerHTML = html;
+        }
+
+        function goPage(page) {
+            currentPage = page;
+            loadImages();
+        }
+
+        function filterImages() {
+            currentPage = 0;
+            loadImages();
+        }
+
+        function changePageSize(val) {
+            pageSize = parseInt(val, 10);
+            currentPage = 0;
+            loadImages();
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return "0 B";
+            const kb = bytes / 1024;
+            const mb = kb / 1024;
+            if (mb >= 1) return mb.toFixed(2) + " MB";
+            if (kb >= 1) return kb.toFixed(2) + " KB";
+            return bytes + " B";
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return "N/A";
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        /* ==========================================================
+           PROFESSIONAL IMAGE VIEWER CONTROLLERS
+        ========================================================== */
+        function initializeViewerEvents() {
+            document.getElementById("closeViewerBtn").addEventListener("click", closeViewer);
+            document.getElementById("previousImageBtn").addEventListener("click", previousImage);
+            document.getElementById("nextImageBtn").addEventListener("click", nextImage);
+            document.getElementById("downloadImageBtn").addEventListener("click", () => {
+                const img = filteredImages[currentImageIndex];
+                if (img) downloadImg(img.imageUrl || img.thumbnailUrl, img.fileName || img.name);
+            });
+
+            document.getElementById("thumbPrev").addEventListener("click", () => {
+                document.getElementById("thumbnailContainer").scrollBy({ left: -200, behavior: "smooth" });
+            });
+            document.getElementById("thumbNext").addEventListener("click", () => {
+                document.getElementById("thumbnailContainer").scrollBy({ left: 200, behavior: "smooth" });
+            });
+
+            const viewerImage = document.getElementById("viewerImage");
+
+            // Wheel Zoom & Pan Reset
+            viewerImage.addEventListener("wheel", (e) => {
+                e.preventDefault();
+                zoomScale += e.deltaY > 0 ? -0.15 : 0.15;
+                zoomScale = Math.max(1, Math.min(4, zoomScale));
+
+                if (zoomScale === 1) { offsetX = 0; offsetY = 0; }
+                updateTransform();
+            }, { passive: false });
+
+            // Double Click Zoom
+            viewerImage.addEventListener("dblclick", () => {
+                zoomScale = zoomScale === 1 ? 2.5 : 1;
+                offsetX = 0; offsetY = 0;
+                updateTransform();
+            });
+
+            // Drag Panning
+            viewerImage.addEventListener("mousedown", (e) => {
+                if (zoomScale <= 1) return;
+                isDragging = true;
+                startX = e.clientX - offsetX;
+                startY = e.clientY - offsetY;
+                viewerImage.style.cursor = "grabbing";
+            });
+
+            window.addEventListener("mousemove", (e) => {
+                if (!isDragging) return;
+                offsetX = e.clientX - startX;
+                offsetY = e.clientY - startY;
+                updateTransform();
+            });
+
+            window.addEventListener("mouseup", () => {
+                isDragging = false;
+                viewerImage.style.cursor = "grab";
+            });
+
+            // Keyboard Navigation
+            document.addEventListener("keydown", (e) => {
+                if (!isViewerOpen) return;
+                if (e.key === "ArrowLeft") previousImage();
+                if (e.key === "ArrowRight") nextImage();
+                if (e.key === "Escape") closeViewer();
+                if (e.key === "Home") showViewerImage(0);
+                if (e.key === "End") showViewerImage(filteredImages.length - 1);
+            });
+        }
+
+        function updateTransform() {
+            const viewerImage = document.getElementById("viewerImage");
+            if (viewerImage) {
+                viewerImage.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${zoomScale})`;
+            }
+        }
+
+        function resetZoom() {
+            zoomScale = 1; offsetX = 0; offsetY = 0;
+            updateTransform();
+        }
+
+        function openViewer(index) {
+            if (index < 0 || index >= filteredImages.length) return;
+            currentImageIndex = index;
+            isViewerOpen = true;
+
+            document.getElementById("imageViewer").style.display = "flex";
+            document.body.style.overflow = "hidden";
+
+            renderThumbnails();
+            showViewerImage(index);
+        }
+
+        function closeViewer() {
+            isViewerOpen = false;
+            document.getElementById("imageViewer").style.display = "none";
+            document.body.style.overflow = "";
+            resetZoom();
+        }
+
+        function showViewerImage(index) {
+            currentImageIndex = index;
+            const img = filteredImages[index];
+            if (!img) return;
+
+            resetZoom();
+
+            const skeleton = document.getElementById("viewerSkeleton");
+            const viewerImage = document.getElementById("viewerImage");
+
+            skeleton.style.display = "block";
+            viewerImage.style.opacity = "0";
+
+            viewerImage.onload = () => {
+                skeleton.style.display = "none";
+                viewerImage.style.opacity = "1";
+            };
+
+            const fullSrc = img.imageUrl || img.thumbnailUrl;
+            const displayName = img.fileName || img.name || 'Untitled';
+
+            viewerImage.src = fullSrc;
+            viewerImage.alt = displayName;
+            document.getElementById("viewerFileName").textContent = displayName;
+            document.getElementById("viewerCounter").textContent = `${index + 1} / ${filteredImages.length}`;
+
+            document.getElementById("previousImageBtn").disabled = index === 0;
+            document.getElementById("nextImageBtn").disabled = index === filteredImages.length - 1;
+
+            updateActiveThumbnail();
+        }
+
+        function previousImage() {
+            if (currentImageIndex > 0) showViewerImage(currentImageIndex - 1);
+        }
+
+        function nextImage() {
+            if (currentImageIndex < filteredImages.length - 1) showViewerImage(currentImageIndex + 1);
+        }
+
+        function renderThumbnails() {
+            const container = document.getElementById("thumbnailContainer");
+            container.innerHTML = "";
+
+            filteredImages.forEach((img, idx) => {
+                const thumb = document.createElement("div");
+                thumb.className = `thumbnail ${idx === currentImageIndex ? 'active' : ''}`;
+                thumb.onclick = () => showViewerImage(idx);
+
+                const thumbSrc = img.thumbnailUrl || img.imageUrl;
+                thumb.innerHTML = `<img src="${thumbSrc}" alt="thumb">`;
+                container.appendChild(thumb);
+            });
+        }
+
+        function updateActiveThumbnail() {
+            const thumbs = document.querySelectorAll(".thumbnail");
+            thumbs.forEach((t, i) => t.classList.toggle("active", i === currentImageIndex));
+
+            const activeThumb = thumbs[currentImageIndex];
+            if (activeThumb) {
+                activeThumb.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+            }
+        }
+    </script>
+</body>
+</html>

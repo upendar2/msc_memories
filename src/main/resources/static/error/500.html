@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Server Error | FOP AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FFD700;
+            --warning: #f59e0b;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --radius: 20px;
+        }
+
+        [data-theme="light"] {
+            --primary: #6366f1;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 50px 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .vector-illustration {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 25px;
+        }
+
+        .error-code {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--warning);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .error-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn-home {
+            background: var(--primary);
+            color: #000;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="error-card">
+        <!-- Gears Vector Image -->
+        <svg class="vector-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="90" fill="var(--border)" fill-opacity="0.3" />
+            <path d="M100 50V30M100 170V150M50 100H30M170 100H150M64.64 64.64L50.5 50.5M149.5 149.5L135.36 135.36M64.64 135.36L50.5 149.5M149.5 50.5L135.36 64.64" stroke="var(--warning)" stroke-width="8" stroke-linecap="round" />
+            <circle cx="100" cy="100" r="35" stroke="var(--warning)" stroke-width="12" />
+        </svg>
+
+        <div class="error-code">500</div>
+        <h1 class="error-title">Something Went Wrong</h1>
+        <p class="error-desc">Our servers encountered an unexpected issue while processing your request. Please try refreshing or check back in a moment.</p>
+        
+        <div class="btn-group">
+            <button onclick="window.location.reload()" class="btn-secondary">🔄 Refresh</button>
+            <a href="/login" class="btn-home">⬅ Go Home</a>
+        </div>
+    </div>
+</body>
+
+</html>

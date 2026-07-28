@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 - Access Denied | FOP AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FFD700;
+            --danger: #ef4444;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --radius: 20px;
+        }
+
+        [data-theme="light"] {
+            --primary: #6366f1;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 50px 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .vector-illustration {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 25px;
+        }
+
+        .error-code {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--danger);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .error-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .btn-home {
+            display: inline-block;
+            background: var(--primary);
+            color: #000;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .btn-home:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="error-card">
+        <!-- Padlock Vector Image -->
+        <svg class="vector-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="90" fill="var(--border)" fill-opacity="0.3" />
+            <rect x="60" y="90" width="80" height="65" rx="12" fill="var(--danger)" />
+            <path d="M75 90V65C75 51.1929 86.1929 40 100 40C113.807 40 125 51.1929 125 65V90" stroke="var(--text)" stroke-width="8" stroke-linecap="round" />
+            <circle cx="100" cy="120" r="6" fill="#FFF" />
+        </svg>
+
+        <div class="error-code">403</div>
+        <h1 class="error-title">Access Restricted</h1>
+        <p class="error-desc">You don't have permission to access this area. Please make sure you are logged in with the correct account or role.</p>
+        
+        <a href="/login" class="btn-home">⬅ Return to Home</a>
+    </div>
+</body>
+
+</html>
