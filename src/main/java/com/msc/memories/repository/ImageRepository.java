@@ -1,6 +1,7 @@
 package com.msc.memories.repository;
 
 import com.msc.memories.model.Image;
+import com.msc.memories.model.User;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,4 +26,13 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     
     // Default paginated fetch for user images
     Page<Image> findByUserRegistrationNumber(String  registrationNumber, Pageable pageable);
+    
+    // Fetch images uploaded exclusively by a specific user
+    Page<Image> findByUser(User user, Pageable pageable);
+
+    // Search within a specific user's uploaded images
+    Page<Image> findByUserAndFileNameContainingIgnoreCase(User user, String fileName, Pageable pageable);
+
+    // Find image by ID and User (Ensures security/ownership check)
+    Optional<Image> findByIdAndUser(Long id, User user);
 }
