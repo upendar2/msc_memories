@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class AuthController {
 	
 	
-    @GetMapping("/login")
+    @GetMapping("/")
     public String showLoginPage() {
         return "login"; // renders login.html
     }

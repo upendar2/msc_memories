@@ -18,9 +18,9 @@
             --bg: #0f172a;
             --card: #1e293b;
             --border: #334155;
-            --glass: rgba(15, 23, 42, 0.85);
+            --glass: rgba(15, 23, 42, 0.9);
             --header-h: 60px;
-            --sidebar-w: 220px;
+            --sidebar-w: 240px;
         }
 
         * {
@@ -28,6 +28,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -36,6 +37,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         /* GLASSY HEADER */
@@ -52,25 +54,42 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 1.5rem;
+            padding: 0 1.25rem;
             z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Mobile Hamburger Toggle (3 Lines) */
+        .mobile-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 1.35rem;
+            cursor: pointer;
+            padding: 4px;
         }
 
         .header-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             text-decoration: none;
             color: var(--text);
         }
 
         .header-brand i.logo-icon {
             color: var(--primary);
-            font-size: 1.5rem;
+            font-size: 1.4rem;
         }
 
         .header-brand span {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             letter-spacing: 0.5px;
             text-transform: uppercase;
@@ -83,15 +102,15 @@
         .header-user {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .user-badge {
             background: rgba(51, 65, 85, 0.5);
-            padding: 0.4rem 0.8rem;
+            padding: 0.35rem 0.75rem;
             border-radius: 20px;
             border: 1px solid var(--border);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--primary);
             display: flex;
             align-items: center;
@@ -102,12 +121,15 @@
             background: transparent;
             border: 1px solid var(--border);
             color: var(--text-muted);
-            padding: 0.4rem 0.8rem;
+            padding: 0.4rem 0.75rem;
             border-radius: 8px;
             cursor: pointer;
             text-decoration: none;
             font-size: 0.85rem;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .btn-logout:hover {
@@ -115,14 +137,15 @@
             border-color: #ef4444;
         }
 
-        /* DASHBOARD LAYOUT */
+        /* APP LAYOUT */
         .app-layout {
             display: flex;
             margin-top: var(--header-h);
             min-height: calc(100vh - var(--header-h));
+            position: relative;
         }
 
-        /* SIDEBAR */
+        /* SIDEBAR / MOBILE DRAWER */
         aside.sidebar {
             width: var(--sidebar-w);
             background: var(--card);
@@ -135,6 +158,17 @@
             top: var(--header-h);
             bottom: 0;
             left: 0;
+            z-index: 900;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 850;
         }
 
         .nav-item {
@@ -166,8 +200,10 @@
         main.main-content {
             margin-left: var(--sidebar-w);
             flex: 1;
-            padding: 2rem;
+            padding: 1.5rem;
             max-width: 1200px;
+            width: 100%;
+            transition: margin-left 0.3s ease;
         }
 
         .page-section {
@@ -183,15 +219,16 @@
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 2rem;
+            padding: 1.5rem;
             max-width: 600px;
+            width: 100%;
         }
 
         .profile-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.25rem;
-            margin-top: 1.5rem;
+            margin-top: 1.25rem;
         }
 
         .profile-item label {
@@ -202,17 +239,19 @@
         }
 
         .profile-item p {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             color: var(--text);
+            word-break: break-word;
         }
 
         /* UPLOAD PIPELINE STYLES */
         .upload-top-bar {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
             gap: 1rem;
         }
 
@@ -227,6 +266,7 @@
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
         }
 
@@ -246,8 +286,8 @@
             color: #fef08a;
             padding: 0.75rem 1rem;
             border-radius: 8px;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+            font-size: 0.85rem;
             font-weight: 500;
         }
 
@@ -255,7 +295,7 @@
             background: var(--card);
             border: 2px dashed var(--border);
             border-radius: 12px;
-            padding: 3rem 2rem;
+            padding: 2.5rem 1rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
@@ -272,19 +312,19 @@
         }
 
         .upload-huge-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
         }
 
         .drop-zone h2 {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.15rem;
+            margin-bottom: 0.4rem;
         }
 
         .drop-zone p {
             color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
         }
 
         .drop-zone p span {
@@ -301,7 +341,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
         }
 
         .batch-dashboard {
@@ -315,7 +355,7 @@
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 1rem;
+            padding: 0.85rem;
         }
 
         .batch-header-row {
@@ -323,12 +363,12 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .batch-status {
-            font-size: 0.8rem;
-            padding: 0.2rem 0.6rem;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 12px;
             text-transform: capitalize;
             font-weight: 600;
@@ -340,7 +380,7 @@
 
         .progress-container {
             width: 100%;
-            height: 8px;
+            height: 6px;
             background: var(--bg);
             border-radius: 4px;
             overflow: hidden;
@@ -356,7 +396,7 @@
         /* GALLERY & PAGINATION STYLES */
         .content-layout {
             display: flex;
-            gap: 30px;
+            gap: 20px;
         }
 
         .gallery-column {
@@ -366,24 +406,24 @@
 
         .search-bar-wrap {
             position: relative;
-            margin-bottom: 25px;
+            margin-bottom: 1.25rem;
         }
 
         .search-bar-wrap input {
             width: 100%;
-            padding: 15px 15px 15px 45px;
-            border-radius: 12px;
+            padding: 12px 12px 12px 42px;
+            border-radius: 10px;
             border: 1px solid var(--border);
             background: var(--card);
             color: var(--text);
             outline: none;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .search-icon {
             position: absolute;
-            left: 15px;
-            top: 22px;
+            left: 14px;
+            top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
         }
@@ -392,7 +432,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-top: 12px;
+            margin-top: 10px;
             color: var(--text-muted);
             font-size: 0.85rem;
         }
@@ -408,37 +448,37 @@
 
         .image-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
         }
 
         .img-card {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 10px;
             overflow: hidden;
             transition: transform 0.2s, border-color 0.2s;
             cursor: pointer;
         }
 
         .img-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-3px);
             border-color: var(--primary);
         }
 
         .img-thumb {
             width: 100%;
-            height: 160px;
+            height: 140px;
             object-fit: cover;
             display: block;
         }
 
         .img-meta {
-            padding: 12px;
+            padding: 10px;
         }
 
         .img-meta .name {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
@@ -447,36 +487,36 @@
         }
 
         .img-meta .details {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
-            margin-top: 4px;
+            margin-top: 2px;
         }
 
         .img-actions {
-            margin-top: 10px;
-            padding-top: 8px;
+            margin-top: 8px;
+            padding-top: 6px;
             border-top: 1px solid var(--border);
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         .pagination {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
-            margin: 30px 0;
+            gap: 6px;
+            margin: 25px 0;
             flex-wrap: wrap;
         }
 
         .pagination button {
-            padding: 8px 14px;
-            border-radius: 8px;
+            padding: 6px 12px;
+            border-radius: 6px;
             cursor: pointer;
             background: var(--card);
             color: var(--text);
             border: 1px solid var(--border);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             transition: all 0.2s;
         }
 
@@ -497,9 +537,7 @@
             cursor: not-allowed;
         }
 
-        /* ==========================================================
-           PROFESSIONAL IMAGE VIEWER MODAL STYLES
-        ========================================================== */
+        /* IMAGE VIEWER MODAL STYLES */
         .image-viewer {
             position: fixed;
             inset: 0;
@@ -524,28 +562,29 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 1rem 1.5rem;
-            background: rgba(15, 23, 42, 0.8);
+            padding: 0.75rem 1rem;
+            background: rgba(15, 23, 42, 0.85);
             border-bottom: 1px solid var(--border);
             z-index: 10;
         }
 
         .viewer-center {
             text-align: center;
+            padding: 0 0.5rem;
         }
 
         .viewer-center h3 {
-            font-size: 1rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: var(--text);
-            max-width: 300px;
+            max-width: 180px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .viewer-center span {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--primary);
             font-weight: 600;
         }
@@ -554,10 +593,10 @@
             background: var(--card);
             border: 1px solid var(--border);
             color: var(--text);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             transition: all 0.2s;
         }
@@ -584,30 +623,30 @@
             align-items: center;
             justify-content: space-between;
             position: relative;
-            padding: 1rem;
+            padding: 0.5rem;
             overflow: hidden;
         }
 
         .viewer-nav {
-            background: rgba(30, 41, 59, 0.7);
+            background: rgba(30, 41, 59, 0.8);
             border: 1px solid var(--border);
             color: #fff;
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 1.25rem;
+            font-size: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
             z-index: 10;
+            flex-shrink: 0;
         }
 
         .viewer-nav:hover:not(:disabled) {
             background: var(--primary);
             color: #000;
-            transform: scale(1.1);
         }
 
         .viewer-nav:disabled {
@@ -623,23 +662,24 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
+            touch-action: none;
         }
 
         .viewer-image-wrapper img {
-            max-width: 90%;
-            max-height: 75vh;
+            max-width: 95%;
+            max-height: 70vh;
             object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
             transition: transform 0.15s ease-out, opacity 0.2s ease;
             cursor: grab;
         }
 
         .viewer-skeleton {
             position: absolute;
-            width: 60px;
-            height: 60px;
-            border: 4px solid var(--border);
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border);
             border-top-color: var(--primary);
             border-radius: 50%;
             animation: spinSkeleton 0.8s linear infinite;
@@ -652,32 +692,33 @@
         .thumbnail-section {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 0.75rem;
             background: rgba(15, 23, 42, 0.85);
             border-top: 1px solid var(--border);
-            gap: 10px;
+            gap: 8px;
         }
 
         .thumb-nav {
             background: var(--card);
             border: 1px solid var(--border);
             color: var(--text);
-            padding: 0.4rem 0.6rem;
+            padding: 0.3rem 0.5rem;
             border-radius: 6px;
             cursor: pointer;
+            font-size: 0.75rem;
         }
 
         .thumbnail-container {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             overflow-x: auto;
             scroll-behavior: smooth;
-            padding: 4px 0;
+            padding: 2px 0;
             flex: 1;
         }
 
         .thumbnail-container::-webkit-scrollbar {
-            height: 4px;
+            height: 3px;
         }
 
         .thumbnail-container::-webkit-scrollbar-thumb {
@@ -686,8 +727,8 @@
         }
 
         .thumbnail {
-            width: 60px;
-            height: 60px;
+            width: 48px;
+            height: 48px;
             flex-shrink: 0;
             border-radius: 6px;
             overflow: hidden;
@@ -708,28 +749,135 @@
             height: 100%;
             object-fit: cover;
         }
+
+        /* MEDIA QUERIES FOR MOBILE BREAKPOINTS */
+        @media (max-width: 768px) {
+            .mobile-toggle {
+                display: block;
+            }
+
+            .header-brand span {
+                font-size: 0.95rem;
+            }
+
+            .user-badge span {
+                display: none;
+            }
+
+            .user-badge {
+                padding: 0.35rem;
+                border-radius: 50%;
+            }
+
+            .user-badge i {
+                font-size: 0.9rem;
+            }
+
+            .btn-logout span {
+                display: none;
+            }
+
+            .btn-logout {
+                padding: 0.4rem;
+            }
+
+            aside.sidebar {
+                transform: translateX(-100%);
+                box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+            }
+
+            aside.sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            main.main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .image-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 10px;
+            }
+
+            .img-thumb {
+                height: 110px;
+            }
+
+            .img-meta {
+                padding: 8px;
+            }
+
+            .viewer-center h3 {
+                max-width: 120px;
+            }
+
+            .viewer-nav {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                background: rgba(15, 23, 42, 0.7);
+            }
+
+            .viewer-nav.left { left: 8px; }
+            .viewer-nav.right { right: 8px; }
+
+            .viewer-btn {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.75rem;
+            }
+
+            .upload-top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .upload-actions {
+                width: 100%;
+            }
+
+            .btn-action {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
 
     <!-- GLASSY HEADER -->
     <header class="glass-header">
-        <a href="#" class="header-brand">
-            <i class="fa-solid fa-camera-retro logo-icon"></i>
-            <span>MSc <span>Memories</span></span>
-        </a>
+        <div class="header-left">
+            <!-- 3 LINES HAMBURGER MENU BUTTON -->
+            <button class="mobile-toggle" id="mobileToggleBtn" aria-label="Toggle Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a href="#" class="header-brand">
+                <i class="fa-solid fa-camera-retro logo-icon"></i>
+                <span>MSc <span>Memories</span></span>
+            </a>
+        </div>
         <div class="header-user">
-            <div class="user-badge">
+            <div class="user-badge" title="Student Reg No">
                 <i class="fa-solid fa-user-graduate"></i>
                 <span id="headerRegNo">Loading...</span>
             </div>
-            <button class="btn-logout" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            <button class="btn-logout" onclick="handleLogout()" title="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </button>
         </div>
     </header>
 
     <div class="app-layout">
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
+        <!-- SIDEBAR OVERLAY FOR MOBILE CLOSE -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- SIDEBAR / MOBILE DRAWER -->
+        <aside class="sidebar" id="appSidebar">
             <div class="nav-item active" onclick="switchTab('homeSection', this)">
                 <i class="fa-solid fa-house"></i> Dashboard
             </div>
@@ -749,18 +897,18 @@
 
             <!-- ================= 1. HOME / OVERVIEW SECTION ================= -->
             <section id="homeSection" class="page-section active">
-                <h1 style="margin-bottom: 0.5rem;">Welcome, <span id="welcomeName">Student</span>!</h1>
-                <p style="color: var(--text-muted); margin-bottom: 2rem;">Manage your project gallery and memory uploads.</p>
+                <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">Welcome, <span id="welcomeName">Student</span>!</h1>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Manage your project gallery and memory uploads.</p>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
                     <div class="profile-card">
-                        <h3><i class="fa-solid fa-images" style="color: var(--primary);"></i> Gallery & Uploads</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.75rem 0 1.25rem 0;">Browse saved photos or upload new batches to your personal vault.</p>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn-action" onclick="switchTab('gallerySection', document.querySelectorAll('.nav-item')[1])">
+                        <h3 style="font-size: 1.1rem;"><i class="fa-solid fa-images" style="color: var(--primary);"></i> Gallery & Uploads</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.5rem 0 1rem 0;">Browse saved photos or upload new batches to your personal vault.</p>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn-action" style="flex: 1;" onclick="switchTab('gallerySection', document.querySelectorAll('.nav-item')[1])">
                                 View Gallery
                             </button>
-                            <button class="btn-action" style="background: transparent; color: var(--text); border: 1px solid var(--border);" onclick="switchTab('uploadSection', document.querySelectorAll('.nav-item')[2])">
+                            <button class="btn-action" style="flex: 1; background: transparent; color: var(--text); border: 1px solid var(--border);" onclick="switchTab('uploadSection', document.querySelectorAll('.nav-item')[2])">
                                 Quick Upload
                             </button>
                         </div>
@@ -770,8 +918,8 @@
 
             <!-- ================= 2. PAGINATED GALLERY SECTION ================= -->
             <section id="gallerySection" class="page-section">
-                <h1 style="margin-bottom: 0.5rem;">Photo Gallery</h1>
-                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Browse and manage your uploaded memories.</p>
+                <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">Photo Gallery</h1>
+                <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">Browse and manage your uploaded memories.</p>
 
                 <div class="content-layout">
                     <div class="gallery-column">
@@ -792,9 +940,9 @@
                         <div id="image-grid" class="image-grid"></div>
                         <div id="pagination" class="pagination"></div>
 
-                        <div id="empty-gallery" class="empty-state" style="display: none; text-align: center; padding: 3rem 1rem;">
-                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🖼️</div>
-                            <h2 style="font-size: 1.2rem; color: var(--text-muted);">No images found</h2>
+                        <div id="empty-gallery" class="empty-state" style="display: none; text-align: center; padding: 2.5rem 1rem;">
+                            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🖼️</div>
+                            <h2 style="font-size: 1.1rem; color: var(--text-muted);">No images found</h2>
                         </div>
                     </div>
                 </div>
@@ -802,8 +950,8 @@
 
             <!-- ================= 3. USER PROFILE SECTION ================= -->
             <section id="profileSection" class="page-section">
-                <h1 style="margin-bottom: 0.5rem;">Student Details</h1>
-                <p style="color: var(--text-muted); margin-bottom: 2rem;">Your registered academic credentials.</p>
+                <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">Student Details</h1>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Your registered academic credentials.</p>
 
                 <div class="profile-card">
                     <div class="profile-grid">
@@ -830,7 +978,7 @@
             <!-- ================= 4. BATCH UPLOAD SECTION ================= -->
             <section id="uploadSection" class="page-section">
                 <div class="upload-top-bar">
-                    <h1 id="event-name">Memory Batch Upload</h1>
+                    <h1 id="event-name" style="font-size: 1.5rem;">Memory Batch Upload</h1>
                     <div class="upload-actions">
                         <button id="startUploadBtn" class="btn-action" onclick="startBatchPipeline()" disabled>
                             🚀 Start Batch Upload
@@ -847,16 +995,16 @@
                     <div class="drop-zone" id="dropZone">
                         <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/webp" hidden>
                         <div class="drop-zone-content" id="dropZoneContent">
-                            <div class="upload-huge-icon">📸</div>
+                            <div class="upload-huge-icon">📁</div>
                             <h2>Drag & Drop Images</h2>
                             <p>or <span>click to browse</span> from your computer</p>
-                            <small>JPG, PNG, WEBP • Handles thousands of files safely via Auto-Batching (100 files/batch)</small>
+                            <small>JPG, PNG, WEBP • Auto-Batching handles high volumes safely (100 files/batch)</small>
                         </div>
                     </div>
 
-                    <div class="upload-list-header" id="listHeader" style="display: none; margin-bottom: 12px;">
-                        <h3>Batch Queue Dashboard</h3>
-                        <span id="batch-count-tag" style="color: var(--primary); font-weight: 600;">0 Batches</span>
+                    <div class="upload-list-header" id="listHeader" style="display: none; margin-bottom: 10px;">
+                        <h3 style="font-size: 1rem;">Batch Queue Dashboard</h3>
+                        <span id="batch-count-tag" style="color: var(--primary); font-size: 0.85rem; font-weight: 600;">0 Batches</span>
                     </div>
 
                     <div class="batch-dashboard" id="batchDashboard"></div>
@@ -935,18 +1083,40 @@
         const startBtn = document.getElementById('startUploadBtn');
         const warningBanner = document.getElementById('uploadWarningBanner');
 
+        // Mobile drawer handlers
+        const mobileToggleBtn = document.getElementById('mobileToggleBtn');
+        const appSidebar = document.getElementById('appSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
         // Fetch Data On Page Load
         document.addEventListener("DOMContentLoaded", () => {
             fetchUserProfile();
             loadImages();
             initializeViewerEvents();
+            setupMobileMenu();
         });
+
+        /* ================= MOBILE DRAWER CONTROLS ================= */
+        function setupMobileMenu() {
+            mobileToggleBtn.addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
+        }
+
+        function toggleSidebar() {
+            appSidebar.classList.toggle('mobile-open');
+            sidebarOverlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            appSidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+        }
 
         async function fetchUserProfile() {
             try {
                 const response = await fetch('/api/user/me', { method: 'GET' });
                 if (response.status === 401 || response.status === 403) {
-                    window.location.href = '/login.html';
+                    window.location.href = '/';
                     return;
                 }
                 const data = await response.json();
@@ -966,9 +1136,9 @@
         async function handleLogout() {
             try {
                 await fetch('/logout', { method: 'POST' });
-                window.location.href = '/login.html?logout=true';
+                window.location.href = '/';
             } catch (e) {
-                window.location.href = '/login.html';
+                window.location.href = '/';
             }
         }
 
@@ -982,6 +1152,8 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
             if (navElem) navElem.classList.add('active');
+
+            closeSidebar(); // Close mobile drawer when selection is made
         }
 
         /* ================= BATCH UPLOADER LOGIC ================= */
@@ -1144,7 +1316,7 @@
             showToast("All batches uploaded successfully!", "success");
             dropZone.classList.remove('disabled');
 
-            // Refresh gallery gallery after upload completes
+            // Refresh gallery after upload completes
             loadImages();
         }
 
@@ -1247,7 +1419,7 @@
                         <span class="name" title="${displayName}">${displayName}</span>
                         <p class="details">${formatDateTime(img.uploadedAt)}</p>
                         <div class="img-actions">
-                            <button class="btn-action" style="padding:0.35rem 0.7rem; font-size:0.75rem; width:100%; justify-content:center;" 
+                            <button class="btn-action" style="padding:0.3rem 0.5rem; font-size:0.7rem; width:100%; justify-content:center;" 
                                     onclick="event.stopPropagation(); downloadImg('${fullSrc}', '${displayName}')">
                                 Download ↓
                             </button>
@@ -1282,8 +1454,8 @@
             html += `<button ${currentPage === 0 ? "disabled" : ""} onclick="goPage(0)">First</button>`;
             html += `<button ${currentPage === 0 ? "disabled" : ""} onclick="goPage(${currentPage - 1})">Prev</button>`;
 
-            let start = Math.max(0, currentPage - 2);
-            let end = Math.min(totalPages - 1, currentPage + 2);
+            let start = Math.max(0, currentPage - 1);
+            let end = Math.min(totalPages - 1, currentPage + 1);
 
             for (let i = start; i <= end; i++) {
                 html += `<button class="${i === currentPage ? "active" : ""}" onclick="goPage(${i})">${i + 1}</button>`;
@@ -1311,15 +1483,6 @@
             loadImages();
         }
 
-        function formatFileSize(bytes) {
-            if (!bytes) return "0 B";
-            const kb = bytes / 1024;
-            const mb = kb / 1024;
-            if (mb >= 1) return mb.toFixed(2) + " MB";
-            if (kb >= 1) return kb.toFixed(2) + " KB";
-            return bytes + " B";
-        }
-
         function formatDateTime(dateStr) {
             if (!dateStr) return "N/A";
             const d = new Date(dateStr);
@@ -1339,13 +1502,34 @@
             });
 
             document.getElementById("thumbPrev").addEventListener("click", () => {
-                document.getElementById("thumbnailContainer").scrollBy({ left: -200, behavior: "smooth" });
+                document.getElementById("thumbnailContainer").scrollBy({ left: -150, behavior: "smooth" });
             });
             document.getElementById("thumbNext").addEventListener("click", () => {
-                document.getElementById("thumbnailContainer").scrollBy({ left: 200, behavior: "smooth" });
+                document.getElementById("thumbnailContainer").scrollBy({ left: 150, behavior: "smooth" });
             });
 
             const viewerImage = document.getElementById("viewerImage");
+
+            // Touch Swipe for Mobile Navigation inside Modal
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            const stage = document.getElementById("viewerStage");
+            stage.addEventListener('touchstart', (e) => {
+                if (zoomScale === 1) touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            stage.addEventListener('touchend', (e) => {
+                if (zoomScale === 1) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                }
+            }, { passive: true });
+
+            function handleSwipe() {
+                if (touchEndX < touchStartX - 50) nextImage();
+                if (touchEndX > touchStartX + 50) previousImage();
+            }
 
             // Wheel Zoom & Pan Reset
             viewerImage.addEventListener("wheel", (e) => {
