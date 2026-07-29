@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | MSc Memories</title>
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cloudflare.com">
+    <title>Admin Portal | MSc Memories</title>
+    
+    <!-- FontAwesome & Toast CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/toast.css">
+
     <style>
         :root {
             --primary: #FFD700;
@@ -15,10 +18,12 @@
             --bg: #0f172a;
             --card: #1e293b;
             --border: #334155;
-            --glass: rgba(15, 23, 42, 0.85);
-            --success: #22c55e;
+            --glass: rgba(15, 23, 42, 0.9);
             --header-h: 60px;
             --sidebar-w: 240px;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --info: #3b82f6;
         }
 
         * {
@@ -26,6 +31,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -33,312 +39,745 @@
             color: var(--text);
             min-height: 100vh;
             display: flex;
-        }
-
-        /* SIDEBAR STYLES */
-        aside.sidebar {
-            width: var(--sidebar-w);
-            background: var(--card);
-            border-right: 1px solid var(--border);
-            display: flex;
             flex-direction: column;
-            position: fixed;
-            height: 100vh;
-            top: 0;
-            left: 0;
-            z-index: 1001;
-        }
-
-        .sidebar-brand {
-            height: var(--header-h);
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-            border-bottom: 1px solid var(--border);
-            text-decoration: none;
-            color: var(--text);
-            font-weight: 700;
-            text-transform: uppercase;
-            gap: 10px;
-        }
-
-        .sidebar-brand i {
-            color: var(--primary);
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 1.5rem 0;
-            flex-grow: 1;
-        }
-
-        .sidebar-item a {
-            display: flex;
-            align-items: center;
-            padding: 0.85rem 1.5rem;
-            color: var(--text-muted);
-            text-decoration: none;
-            gap: 12px;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-        }
-
-        .sidebar-item a:hover, .sidebar-item.active a {
-            color: var(--text);
-            background: rgba(255, 215, 0, 0.05);
-            border-left: 4px solid var(--primary);
-        }
-
-        .sidebar-item.active a i {
-            color: var(--primary);
-        }
-
-        /* MAIN CONTENT SECTION */
-        main.main-content {
-            margin-left: var(--sidebar-w);
-            width: calc(100% - var(--sidebar-w));
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            overflow-x: hidden;
         }
 
         /* GLASSY HEADER */
-        header.dashboard-header {
+        header.glass-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: var(--header-h);
             background: var(--glass);
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 2rem;
-            position: sticky;
-            top: 0;
+            padding: 0 1.25rem;
             z-index: 1000;
         }
 
-        .search-wrapper {
-            position: relative;
+        .header-left {
             display: flex;
             align-items: center;
+            gap: 12px;
         }
 
-        .search-wrapper i {
-            position: absolute;
-            left: 1rem;
-            color: var(--text-muted);
-        }
-
-        .search-wrapper input {
-            background: var(--bg);
-            border: 1px solid var(--border);
+        .mobile-toggle {
+            display: none;
+            background: transparent;
+            border: none;
             color: var(--text);
-            padding: 0.5rem 1rem 0.5rem 2.5rem;
-            border-radius: 6px;
-            outline: none;
-            width: 250px;
+            font-size: 1.35rem;
+            cursor: pointer;
+            padding: 4px;
         }
 
-        .user-profile {
+        .header-brand {
             display: flex;
             align-items: center;
             gap: 10px;
-            cursor: pointer;
+            text-decoration: none;
+            color: var(--text);
         }
 
-        .user-profile i {
-            font-size: 1.25rem;
+        .header-brand i.logo-icon {
             color: var(--primary);
+            font-size: 1.4rem;
         }
 
-        /* CONTENT CONTAINER */
-        .content-body {
-            padding: 2rem;
-            flex-grow: 1;
+        .header-brand span {
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
-        .welcome-sec {
-            margin-bottom: 2rem;
+        .header-brand span span { color: var(--primary); }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .welcome-sec h1 {
-            font-size: 1.75rem;
-            font-weight: 600;
+        .admin-badge {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .welcome-sec p {
+        .btn-logout {
+            background: transparent;
+            border: 1px solid var(--border);
             color: var(--text-muted);
-            font-size: 0.95rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        /* METRIC STAT CARDS */
+        .btn-logout:hover { color: var(--danger); border-color: var(--danger); }
+
+        /* LAYOUT */
+        .app-layout {
+            display: flex;
+            margin-top: var(--header-h);
+            min-height: calc(100vh - var(--header-h));
+            position: relative;
+        }
+
+        /* SIDEBAR */
+        aside.sidebar {
+            width: var(--sidebar-w);
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: fixed;
+            top: var(--header-h);
+            bottom: 0;
+            left: 0;
+            z-index: 900;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 850;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover { background: rgba(255, 215, 0, 0.05); color: var(--primary); }
+        .nav-item.active { background: var(--primary); color: #000; font-weight: 700; }
+
+        /* MAIN CONTENT */
+        main.main-content {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            padding: 1.5rem;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+
+        /* STATS CARDS */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
         }
 
         .stat-card {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 1.5rem;
+            padding: 1.25rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .stat-details h3 {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-details span {
-            font-size: 1.75rem;
-            font-weight: 700;
-        }
-
+        .stat-info h3 { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem; }
+        .stat-info p { font-size: 1.75rem; font-weight: 800; color: var(--text); }
         .stat-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 215, 0, 0.1);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            font-size: 1.25rem;
+            width: 50px; height: 50px; border-radius: 10px;
+            background: rgba(255, 215, 0, 0.1); color: var(--primary);
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
         }
 
-        /* RECENT ACTIVITY TABLE */
-        .table-container {
+        /* CARD PANELS & FORMS */
+        .card-panel {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .form-control {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus { border-color: var(--primary); }
+
+        .btn-action {
+            padding: 0.6rem 1.2rem;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover { background: var(--primary-hover); }
+        .btn-action.btn-danger { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .btn-action.btn-danger:hover { background: var(--danger); color: #fff; }
+
+        /* USER DIRECTORY TABLE */
+        .table-responsive {
             overflow-x: auto;
+            margin-top: 1rem;
         }
 
-        .table-container h2 {
-            font-size: 1.2rem;
-            margin-bottom: 1.2rem;
-        }
-
-        table {
+        table.user-table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-        }
-
-        th {
-            color: var(--text-muted);
-            font-weight: 600;
             font-size: 0.85rem;
-            text-transform: uppercase;
-            padding: 0.75rem 1rem;
-            border-bottom: 2px solid var(--border);
         }
 
-        td {
-            padding: 1rem;
-            font-size: 0.95rem;
+        table.user-table th, table.user-table td {
+            padding: 0.75rem 1rem;
             border-bottom: 1px solid var(--border);
         }
 
-        tr:last-child td {
-            border-bottom: none;
+        table.user-table th { background: rgba(15, 23, 42, 0.5); color: var(--text-muted); }
+
+        /* GALLERY GRID */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
         }
 
-        .status-badge {
-            background: rgba(34, 197, 94, 0.15);
-            color: var(--success);
-            padding: 0.25rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
+        .img-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
         }
 
-        /* RESPONSIVE LAYOUT BREAKPOINT */
+        .img-thumb { width: 100%; height: 140px; object-fit: cover; display: block; cursor: pointer; }
+        .img-meta { padding: 10px; }
+        .img-meta .name { font-size: 0.8rem; font-weight: 700; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* LOG TERMINAL */
+        .log-terminal { background: #090d16; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; font-family: 'Courier New', monospace; }
+        .log-header { background: #111827; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .log-body { padding: 1rem; height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+        .log-line { font-size: 0.8rem; display: flex; gap: 12px; border-bottom: 1px dashed rgba(255, 255, 255, 0.05); padding-bottom: 4px; }
+        .log-type.INFO { color: var(--info); }
+        .log-type.SUCCESS { color: var(--success); }
+        .log-type.WARN { color: var(--primary); }
+
         @media (max-width: 768px) {
-            aside.sidebar { width: 70px; }
-            aside.sidebar .sidebar-brand span, 
-            aside.sidebar .sidebar-item span { display: none; }
-            main.main-content { margin-left: 70px; width: calc(100% - 70px); }
-            header.dashboard-header .search-wrapper { display: none; }
+            .mobile-toggle { display: block; }
+            aside.sidebar { transform: translateX(-100%); }
+            aside.sidebar.mobile-open { transform: translateX(0); }
+            .sidebar-overlay.active { display: block; }
+            main.main-content { margin-left: 0; padding: 1rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <a href="#" class="sidebar-brand">
-            <i class="fa-solid fa-camera-retro"></i>
-            <span>MSc Admin</span>
-        </a>
-        <ul class="sidebar-menu">
-            <li class="sidebar-item active">
-                <a href="#"><i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span></a>
-            </li>
-            <li class="sidebar-item">
-                <a href="#"><i class="fa-solid fa-users"></i> <span>Students</span></a>
-            </li>
-            <li class="sidebar-item">
-                <a href="#"><i class="fa-solid fa-images"></i> <span>Memories</span></a>
-            </li>
-            <li class="sidebar-item">
-                <a href="#"><i class="fa-solid fa-gear"></i> <span>Settings</span></a>
-            </li>
-        </ul>
-    </aside>
-
-    <!-- MAIN INTERFACE -->
-    <main class="main-content">
-        <!-- HEADER -->
-        <header class="dashboard-header">
-            <div class="search-wrapper">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search logs, entries...">
+    <!-- GLASSY HEADER -->
+    <header class="glass-header">
+        <div class="header-left">
+            <button class="mobile-toggle" id="mobileToggleBtn"><i class="fa-solid fa-bars"></i></button>
+            <a href="#" class="header-brand">
+                <i class="fa-solid fa-shield-halved logo-icon"></i>
+                <span>Admin <span>Portal</span></span>
+            </a>
+        </div>
+        <div class="header-user">
+            <div class="admin-badge">
+                <i class="fa-solid fa-user-shield"></i>
+                <span id="adminHeaderName">Loading...</span>
             </div>
-            <div class="user-profile">
-                <span>Admin User</span>
-                <i class="fa-solid fa-circle-user"></i>
-            </div>
-        </header>
+            <button class="btn-logout" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Exit</button>
+        </div>
+    </header>
 
-        <!-- DASHBOARD BODY -->
-        <div class="content-body">
-            <div class="welcome-sec">
-                <h1>Dashboard Overview</h1>
-                <p>Monitor metrics, pending registration configurations, and system health status.</p>
-            </div>
+    <div class="app-layout">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-            <!-- ANALYTICS CARDS -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-details">
-                        <h3>Total Students</h3>
-                        <span>1,248</span>
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="appSidebar">
+            <div class="nav-item active" onclick="switchTab('dashboardSection', this)">
+                <i class="fa-solid fa-chart-pie"></i> Overview
+            </div>
+            <div class="nav-item" onclick="switchTab('managePhotosSection', this)">
+                <i class="fa-solid fa-images"></i> User Photos
+            </div>
+            <div class="nav-item" onclick="switchTab('manageUsersSection', this)">
+                <i class="fa-solid fa-user-plus"></i> Add & Edit Users
+            </div>
+            <div class="nav-item" onclick="switchTab('logsSection', this)">
+                <i class="fa-solid fa-terminal"></i> Live AJAX Logs
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- 1. OVERVIEW & STATS -->
+            <section id="dashboardSection" class="page-section active">
+                <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">System Overview</h1>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Live analytics across platform users and media repository.</p>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Total Users</h3>
+                            <p id="statTotalUsers">0</p>
+                        </div>
+                        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                     </div>
-                    <div class="stat-icon"><i class="fa-solid fa-graduation-cap"></i></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-details">
-                        <h3>Photos Uploaded</h3>
-                        <span>4,812</span>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Total Photos</h3>
+                            <p id="statTotalPhotos">0</p>
+                        </div>
+                        <div class="stat-icon"><i class="fa-solid fa-photo-film"></i></div>
                     </div>
-                    <div class="stat-icon"><i class="fa-solid fa-image"></i></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-details">
-                        <h3>Active Sessions</h3>
-                        <span>42</span>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Server Status</h3>
+                            <p style="color: var(--success); font-size: 1.25rem; margin-top: 6px;">ONLINE</p>
+                        </div>
+                        <div class="stat-icon" style="color: var(--success); background: rgba(34, 197, 94, 0.1);"><i class="fa-solid fa-server"></i></div>
                     </div>
-                    <div class="stat-icon"><i class="fa-solid fa-bolt"></i></div>
                 </div>
-            </div>
+            </section>
 
-            <!-- LOG ENTRIES TABLE -->
+            <!-- 2. PHOTO MANAGEMENT & USER FILTER -->
+            <section id="managePhotosSection" class="page-section">
+                <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">User Photos Manager</h1>
+                <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">Filter photos strictly by selected user and execute deletions.</p>
+
+                <div class="card-panel" style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <select id="userFilterSelect" class="form-control" style="min-width:220px;" onchange="onUserFilterChange()">
+                        <option value="">-- All Registered Users --</option>
+                    </select>
+                    <input type="text" id="adminSearchInput" class="form-control" style="min-width:220px;" placeholder="Search file name..." oninput="filterAdminImages()">
+                </div>
+
+                <div id="admin-image-grid" class="image-grid"></div>
+            </section>
+
+            <!-- 3. ADD / EDIT USER TAB -->
+            <section id="manageUsersSection" class="page-section">
+                <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">User Account Management</h1>
+                <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">Register new users/admins or modify existing credentials.</p>
+
+                <!-- ADD / EDIT FORM -->
+                <div class="card-panel">
+                    <h3 id="formTitle"><i class="fa-solid fa-user-plus" style="color: var(--primary);"></i> Create New Account</h3>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Registration Number (ID)</label>
+                            <input type="text" id="userRegNoInput" class="form-control" placeholder="AU123456">
+                        </div>
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="userNameInput" class="form-control" placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="userEmailInput" class="form-control" placeholder="user@msc.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="text" id="userPhoneInput" class="form-control" placeholder="9876543210">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="userPasswordInput" class="form-control" placeholder="••••••••">
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select id="userRoleInput" class="form-control">
+                                <option value="USER">USER</option>
+                                <option value="ADMIN">ADMIN</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.25rem; display: flex; gap: 10px;">
+                        <button class="btn-action" onclick="saveUser()"><i class="fa-solid fa-floppy-disk"></i> Save Account</button>
+                        <button class="btn-action btn-danger" onclick="resetUserForm()"><i class="fa-solid fa-xmark"></i> Cancel / Clear</button>
+                    </div>
+                </div>
+
+                <!-- USER DIRECTORY TABLE -->
+                <div class="card-panel">
+                    <h3><i class="fa-solid fa-users" style="color: var(--primary);"></i> User Directory</h3>
+                    <div class="table-responsive">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Reg Number</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userDirectoryTable">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. LIVE LOGS -->
+            <section id="logsSection" class="page-section">
+                <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">Live System Logs</h1>
+                <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">Real-time AJAX network event feed.</p>
+
+                <div class="log-terminal">
+                    <div class="log-header">
+                        <h3>AJAX NETWORK MONITOR</h3>
+                        <button class="btn-action" style="padding: 0.3rem 0.6rem; font-size:0.75rem;" onclick="clearLogs()">Clear Logs</button>
+                    </div>
+                    <div class="log-body" id="logTerminalBody"></div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="/js/toast.js"></script>
+
+    <script>
+        let selectedRegNo = "";
+        let isEditMode = false;
+        let currentPage = 0;
+        let pageSize = 24;
+
+        const appSidebar = document.getElementById('appSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const mobileToggleBtn = document.getElementById('mobileToggleBtn');
+
+        document.addEventListener("DOMContentLoaded", () => {
+            setupMobileMenu();
+            fetchAdminDetails();
+            fetchAdminStats();
+            loadUserDropdownAndDirectory();
+            loadAdminImages();
+        });
+
+        /* MOBILE MENU CONTROLS */
+        function setupMobileMenu() {
+            mobileToggleBtn.addEventListener('click', () => {
+                appSidebar.classList.toggle('mobile-open');
+                sidebarOverlay.classList.toggle('active');
+            });
+            sidebarOverlay.addEventListener('click', closeSidebar);
+        }
+
+        function closeSidebar() {
+            appSidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+        }
+
+        function switchTab(sectionId, navElem) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            if (navElem) navElem.classList.add('active');
+            closeSidebar();
+        }
+
+        /* FETCH LOGGED IN ADMIN DETAILS */
+        async function fetchAdminDetails() {
+            try {
+                const res = await fetch('/api/admin/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('adminHeaderName').textContent = data.name || data.registrationNumber;
+                    appendLog("INFO", `Authenticated Admin: ${data.name} (${data.registrationNumber})`);
+                }
+            } catch (err) {
+                appendLog("WARN", "Failed to retrieve admin details");
+            }
+        }
+
+        /* FETCH STATS & USERS DIRECTORY */
+        async function fetchAdminStats() {
+            try {
+                const res = await fetch('/api/admin/stats');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('statTotalUsers').textContent = data.totalUsers || 0;
+                    document.getElementById('statTotalPhotos').textContent = data.totalPhotos || 0;
+                }
+            } catch (err) {}
+        }
+
+		/* FETCH STATS, DROPDOWN & FULL USER DIRECTORY */
+		async function loadUserDropdownAndDirectory() {
+		    try {
+		        // 1. Fetch Students/Non-Admins for Photo Filter Dropdown
+		        const dropdownRes = await fetch('/api/admin/users/students-only');
+		        if (dropdownRes.ok) {
+		            const students = await dropdownRes.json();
+		            const select = document.getElementById('userFilterSelect');
+		            select.innerHTML = '<option value="">-- All Registered Users --</option>';
+
+		            students.forEach(s => {
+		                const opt = document.createElement('option');
+		                opt.value = s.registrationNumber;
+		                opt.textContent = `${s.name} (${s.registrationNumber})`;
+		                select.appendChild(opt);
+		            });
+		        }
+
+		        // 2. Fetch ALL Users (Admins + Users) for Directory Table
+		        const allUsersRes = await fetch('/api/admin/users');
+		        if (allUsersRes.ok) {
+		            const allUsers = await allUsersRes.json();
+		            const tbody = document.getElementById('userDirectoryTable');
+		            tbody.innerHTML = '';
+
+		            allUsers.forEach(u => {
+		                const isAdmin = u.role && (u.role.toUpperCase() === 'ADMIN' || u.role.toUpperCase() === 'ROLE_ADMIN');
+		                const roleBadgeColor = isAdmin ? 'var(--danger)' : 'var(--primary)';
+
+		                const tr = document.createElement('tr');
+		                tr.innerHTML = `
+		                    <td><strong>${u.registrationNumber}</strong></td>
+		                    <td>${u.name}</td>
+		                    <td>${u.email}</td>
+		                    <td>${u.phoneNumber || 'N/A'}</td>
+		                    <td><span style="color:${roleBadgeColor}; font-weight:700;">${u.role}</span></td>
+		                    <td>
+		                        <button class="btn-action" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick='editUser(${JSON.stringify(u)})'>
+		                            <i class="fa-solid fa-pen"></i> Edit
+		                        </button>
+		                    </td>
+		                `;
+		                tbody.appendChild(tr);
+		            });
+		        }
+		    } catch (err) {
+		        appendLog("WARN", "Failed to load user directory");
+		    }
+		}
+
+        /* CREATE OR UPDATE USER ACCOUNT */
+        async function saveUser() {
+            const regNo = document.getElementById('userRegNoInput').value.trim();
+            const name = document.getElementById('userNameInput').value.trim();
+            const email = document.getElementById('userEmailInput').value.trim();
+            const phoneNumber = document.getElementById('userPhoneInput').value.trim();
+            const password = document.getElementById('userPasswordInput').value;
+            const role = document.getElementById('userRoleInput').value;
+
+            if (!regNo || !name || !email) {
+                showToast("Registration Number, Name, and Email are required.", "error");
+                return;
+            }
+
+            const payload = { registrationNumber: regNo, name, email, phoneNumber, password, role };
+            const method = isEditMode ? 'PUT' : 'POST';
+            const endpoint = isEditMode ? `/api/admin/users/${encodeURIComponent(regNo)}` : '/api/admin/users';
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast(isEditMode ? "User updated successfully" : "User created successfully", "success");
+                    resetUserForm();
+                    loadUserDropdownAndDirectory();
+                    fetchAdminStats();
+                } else {
+                    const data = await res.json();
+                    showToast(data.message || "Failed to save user", "error");
+                }
+            } catch (err) {
+                showToast("Server error saving user account", "error");
+            }
+        }
+
+        function editUser(user) {
+            isEditMode = true;
+            const regInput = document.getElementById('userRegNoInput');
+            regInput.value = user.registrationNumber || '';
+            regInput.disabled = true; // Primary Key cannot be edited
+
+            document.getElementById('userNameInput').value = user.name || '';
+            document.getElementById('userEmailInput').value = user.email || '';
+            document.getElementById('userPhoneInput').value = user.phoneNumber || '';
+            document.getElementById('userPasswordInput').value = '';
+            document.getElementById('userRoleInput').value = user.role || 'ROLE_USER';
+
+            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> Edit User (${user.registrationNumber})`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetUserForm() {
+            isEditMode = false;
+            const regInput = document.getElementById('userRegNoInput');
+            regInput.value = '';
+            regInput.disabled = false;
+
+            document.getElementById('userNameInput').value = '';
+            document.getElementById('userEmailInput').value = '';
+            document.getElementById('userPhoneInput').value = '';
+            document.getElementById('userPasswordInput').value = '';
+            document.getElementById('userRoleInput').value = 'ROLE_USER';
+
+            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-user-plus" style="color: var(--primary);"></i> Create New Account`;
+        }
+
+        /* FETCH IMAGES FILTERED BY SELECTED USER */
+        async function loadAdminImages() {
+            const search = document.getElementById('adminSearchInput').value;
+            let url = `/api/admin/images?page=${currentPage}&size=${pageSize}&search=${encodeURIComponent(search)}`;
+            
+            if (selectedRegNo) {
+                url += `&regNo=${encodeURIComponent(selectedRegNo)}`;
+            }
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("Failed to load images");
+
+                const page = await res.json();
+                renderAdminGrid(page.content);
+                appendLog("SUCCESS", `GET /api/admin/images - Loaded ${page.content.length} records`);
+            } catch (err) {
+                appendLog("WARN", "Failed to load admin image grid");
+            }
+        }
+
+        function renderAdminGrid(images) {
+            const grid = document.getElementById('admin-image-grid');
+            grid.innerHTML = "";
+
+            if (!images || images.length === 0) {
+                grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;">No images found for the selected filter.</p>`;
+                return;
+            }
+
+            images.forEach(img => {
+                const card = document.createElement('div');
+                card.className = 'img-card';
+                card.innerHTML = `
+                    <img class="img-thumb" src="${img.thumbnailUrl || img.imageUrl}" onclick="window.open('${img.imageUrl}', '_blank')">
+                    <div class="img-meta">
+                        <span class="name">${img.fileName || 'Untitled'}</span>
+                        <button class="btn-action btn-danger" style="width:100%; justify-content:center; font-size:0.75rem; padding:0.35rem; margin-top:6px;" 
+                                onclick="adminDeletePhoto(${img.id})">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function adminDeletePhoto(id) {
+            if (!confirm("Are you sure you want to delete this photo?")) return;
+
+            try {
+                const res = await fetch(`/api/admin/images/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast("Photo deleted", "success");
+                    fetchAdminStats();
+                    loadAdminImages();
+                }
+            } catch (err) {}
+        }
+
+        function onUserFilterChange() {
+            selectedRegNo = document.getElementById('userFilterSelect').value;
+            currentPage = 0;
+            loadAdminImages();
+        }
+
+        function filterAdminImages() {
+            currentPage = 0;
+            loadAdminImages();
+        }
+
+        function appendLog(type, msg) {
+            const body = document.getElementById('logTerminalBody');
+            if (!body) return;
+            const time = new Date().toLocaleTimeString();
+            const logLine = document.createElement('div');
+            logLine.className = 'log-line';
+            logLine.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-type ${type}">${type}</span> <span>${msg}</span>`;
+            body.appendChild(logLine);
+            body.scrollTop = body.scrollHeight;
+        }
+
+        function clearLogs() { document.getElementById('logTerminalBody').innerHTML = ""; }
+        function handleLogout() { window.location.href = '/'; }
+    </script>
+</body>
+</html>
