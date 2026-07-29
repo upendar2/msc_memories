@@ -1,40 +1,46 @@
 package com.msc.memories.service;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final SendGrid sendGrid;
 
-    @Value("${spring.mail.username}")
+    @Value("${sendgrid.from-email}")
     private String fromEmail;
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    @Value("${sendgrid.from-name:MSc Memories}")
+    private String fromName;
+
+    public EmailService(@Value("${sendgrid.api-key}") String apiKey) {
+        this.sendGrid = new SendGrid(apiKey);
     }
 
     /**
      * 1. Send Simple Text Email
      */
     public void sendSimpleEmail(String toEmail, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmail);
-        message.setTo(toEmail);
-        message.setSubject(subject);
-        message.setText(body);
+        Email from = new Email(fromEmail, fromName);
+        Email to = new Email(toEmail);
+        Content content = new Content("text/plain", body);
+        Mail mail = new Mail(from, subject, to, content);
 
-        mailSender.send(message);
+        sendMail(mail);
     }
 
     /**
-     * 2. Send Password Reset OTP Email (HTML Template matching app theme)
+     * 2. Send Password Reset OTP Email (HTML Template)
      */
     public void sendPasswordResetOtp(String toEmail, String studentName, String otp) {
         String subject = "Password Reset OTP - MSc Memories";
@@ -114,21 +120,39 @@ public class EmailService {
     }
 
     /**
-     * 4. Helper method to construct and send MIME HTML emails
+     * 4. Send Custom HTML Email
      */
     public void sendHtmlEmail(String toEmail, String subject, String htmlBody) {
+        Email from = new Email(fromEmail, fromName);
+        Email to = new Email(toEmail);
+        Content content = new Content("text/html", htmlBody);
+        Mail mail = new Mail(from, subject, to, content);
+
+        sendMail(mail);
+    }
+
+    /**
+     * Helper to execute API HTTP requests to SendGrid
+     */
+    private void sendMail(Mail mail) {
+        Request request = new Request();
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
 
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject(subject);
-            helper.setText(htmlBody, true); // true = HTML content
+            Response response = this.sendGrid.api(request);
+            int statusCode = response.getStatusCode();
 
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Failed to send HTML email to " + toEmail, e);
+            if (statusCode >= 200 && statusCode < 300) {
+                System.out.println("SendGrid Email sent successfully! Status code: " + statusCode);
+            } else {
+                System.err.println("Failed to send email via SendGrid. Status code: " + statusCode + ", Body: " + response.getBody());
+                throw new RuntimeException("SendGrid Email dispatch failed with HTTP code " + statusCode);
+            }
+        } catch (IOException e) {
+            System.err.println("IO Exception while communicating with SendGrid API: " + e.getMessage());
+            throw new RuntimeException("Failed to send email via SendGrid API", e);
         }
     }
 }
