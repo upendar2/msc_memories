@@ -69,7 +69,7 @@ public class SecurityConfig {
                         "/admin-dashboard/**",
                         "/admin/**",
                         "/api/admin/**"
-                ).hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+                ).hasAnyAuthority("ADMIN")
 
                 // 3. User Dashboard & Standard Authenticated Routes
                 .requestMatchers(
@@ -82,7 +82,7 @@ public class SecurityConfig {
                         "/api/images/**",
                         "/api/user/**",
                         "/profile/**"
-                ).hasAnyAuthority("USER", "ROLE_USER", "ADMIN", "ROLE_ADMIN")
+                ).hasAnyAuthority("USER", "ADMIN")
 
                 .anyRequest().authenticated()
             )
@@ -93,14 +93,18 @@ public class SecurityConfig {
                 .passwordParameter("password")
 
                 .successHandler((request, response, authentication) -> {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.setContentType("application/json");
-                    response.setCharacterEncoding("UTF-8");
-
+                    String username = authentication.getName();
                     String role = authentication.getAuthorities().stream()
                             .map(GrantedAuthority::getAuthority)
                             .findFirst()
                             .orElse("USER");
+
+                    // 1. SUCCESSFUL LOGIN LOG
+                    System.out.println("[AUTH SUCCESS] User logged in: " + username + " | Role: " + role);
+
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
 
                     String redirectUrl = role.toUpperCase().contains("ADMIN") ? "/admin-dashboard" : "/user-dashboard";
 
@@ -115,6 +119,11 @@ public class SecurityConfig {
                 })
 
                 .failureHandler((request, response, exception) -> {
+                    String usernameAttempt = request.getParameter("username");
+
+                    // 2. FAILED LOGIN LOG
+                    System.err.println("[AUTH FAILURE] Failed login attempt for ID/Email: " + usernameAttempt + " | Reason: " + exception.getMessage());
+
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
@@ -129,6 +138,12 @@ public class SecurityConfig {
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
+                .addLogoutHandler((request, response, authentication) -> {
+                    if (authentication != null) {
+                        // 3. LOGOUT LOG
+                        System.out.println("[AUTH LOGOUT] User logged out: " + authentication.getName());
+                    }
+                })
                 .logoutSuccessUrl("/")
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")

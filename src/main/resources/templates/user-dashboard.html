@@ -1362,54 +1362,61 @@
             }
         }
 
-        function renderGrid() {
-            const grid = document.getElementById('image-grid');
-            const empty = document.getElementById('empty-gallery');
+		function renderGrid() {
+		    const grid = document.getElementById('image-grid');
+		    const empty = document.getElementById('empty-gallery');
 
-            if (!grid) return;
-            grid.innerHTML = "";
+		    if (!grid) return;
+		    grid.innerHTML = "";
 
-            if (filteredImages.length === 0) {
-                empty.style.display = 'block';
-                return;
-            }
+		    if (filteredImages.length === 0) {
+		        empty.style.display = 'block';
+		        return;
+		    }
 
-            empty.style.display = 'none';
+		    empty.style.display = 'none';
 
-            filteredImages.forEach((img, index) => {
-                const card = document.createElement('div');
-                card.className = 'img-card';
-                card.onclick = () => openViewer(index);
+		    filteredImages.forEach((img, index) => {
+		        const card = document.createElement('div');
+		        card.className = 'img-card';
+		        card.onclick = () => openViewer(index);
 
-                const thumbSrc = img.thumbnailUrl || img.imageUrl;
-                const fullSrc = img.imageUrl || img.thumbnailUrl;
-                const displayName = img.fileName || img.name || 'Untitled';
+		        const thumbSrc = img.thumbnailUrl || img.imageUrl;
+		        const fullSrc = img.imageUrl || img.thumbnailUrl;
+		        const displayName = img.fileName || img.name || 'Untitled';
+		        
+		        // Extract uploader details
+		        const uploaderName = img.uploaderName || 'Unknown';
+		        const uploaderRegNo = img.uploaderRegNo ? `(${img.uploaderRegNo})` : '';
 
-                // Delete button included for 'my-uploads' mode
-                const deleteBtnHtml = currentGalleryMode === 'my-uploads' ? `
-                    <button class="btn-action btn-danger" style="padding:0.3rem 0.5rem; font-size:0.7rem; justify-content:center;" 
-                            onclick="event.stopPropagation(); deleteImageById(${img.id}, '${displayName}')" title="Delete Image">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                ` : '';
+		        // Delete button included for 'my-uploads' mode
+		        const deleteBtnHtml = currentGalleryMode === 'my-uploads' ? `
+		            <button class="btn-action btn-danger" style="padding:0.3rem 0.5rem; font-size:0.7rem; justify-content:center;" 
+		                    onclick="event.stopPropagation(); deleteImageById(${img.id}, '${displayName}')" title="Delete Image">
+		                <i class="fa-solid fa-trash"></i>
+		            </button>
+		        ` : '';
 
-                card.innerHTML = `
-                    <img class="img-thumb" loading="lazy" src="${thumbSrc}" alt="${displayName}">
-                    <div class="img-meta">
-                        <span class="name" title="${displayName}">${displayName}</span>
-                        <p class="details">${formatDateTime(img.uploadedAt)}</p>
-                        <div class="img-actions">
-                            <button class="btn-action" style="padding:0.3rem 0.5rem; font-size:0.7rem; flex:1; justify-content:center;" 
-                                    onclick="event.stopPropagation(); downloadImg('${fullSrc}', '${displayName}')">
-                                Download ↓
-                            </button>
-                            ${deleteBtnHtml}
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
+		        card.innerHTML = `
+		            <img class="img-thumb" loading="lazy" src="${thumbSrc}" alt="${displayName}">
+		            <div class="img-meta">
+		                <span class="name" title="${displayName}">${displayName}</span>
+		                <p class="details" style="color: var(--primary); font-weight: 600; margin-top: 4px;">
+		                    <i class="fa-solid fa-user-tag" style="font-size: 0.75rem;"></i> ${uploaderName} ${uploaderRegNo}
+		                </p>
+		                <p class="details">${formatDateTime(img.uploadedAt)}</p>
+		                <div class="img-actions">
+		                    <button class="btn-action" style="padding:0.3rem 0.5rem; font-size:0.7rem; flex:1; justify-content:center;" 
+		                            onclick="event.stopPropagation(); downloadImg('${fullSrc}', '${displayName}')">
+		                        Download ↓
+		                    </button>
+		                    ${deleteBtnHtml}
+		                </div>
+		            </div>
+		        `;
+		        grid.appendChild(card);
+		    });
+		}
 
         async function deleteImageById(imageId, fileName) {
             if (!confirm(`Are you sure you want to delete "${fileName}"? This action cannot be undone.`)) {
@@ -1625,12 +1632,16 @@
         function showViewerImage(index) {
             currentImageIndex = index;
             const img = filteredImages[index];
+			const uploaderName = img.uploaderName || 'Unknown';
+			const uploaderRegNo = img.uploaderRegNo ? `(${img.uploaderRegNo})` : ''
             if (!img) return;
 
             resetZoom();
 
             const skeleton = document.getElementById("viewerSkeleton");
             const viewerImage = document.getElementById("viewerImage");
+			document.getElementById("viewerFileName").textContent = displayName;
+			document.getElementById("viewerCounter").textContent = `${index + 1} / ${filteredImages.length} • Uploaded by ${uploaderName} ${uploaderRegNo}`;
 
             skeleton.style.display = "block";
             viewerImage.style.opacity = "0";

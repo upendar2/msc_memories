@@ -141,6 +141,15 @@ public class ImageController {
         dto.setThumbnailUrl(img.getThumbnailUrl());
         dto.setPublicId(img.getPublicId());
         dto.setUploadedAt(img.getUploadedAt());
+        
+        // Populate uploader details safely from the JPA entity relationship
+        if (img.getUser() != null) {
+            dto.setUploaderName(img.getUser().getName());
+            dto.setUploaderRegNo(img.getUser().getRegistrationNumber());
+        } else {
+            dto.setUploaderName("Unknown");
+            dto.setUploaderRegNo("");
+        }
         return dto;
     }
 }

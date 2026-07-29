@@ -37,6 +37,7 @@ public class EmailService {
         Mail mail = new Mail(from, subject, to, content);
 
         sendMail(mail);
+        System.out.println("[AUDIT] OTP generated for Email: " + toEmail);
     }
 
     /**
@@ -77,6 +78,7 @@ public class EmailService {
             """, studentName, otp);
 
         sendHtmlEmail(toEmail, subject, htmlContent);
+        System.out.println("[AUDIT] PASSWORD RESET LINK for Email: " + toEmail);
     }
 
     /**
@@ -117,6 +119,7 @@ public class EmailService {
             """, studentName, resetUrl, resetUrl);
 
         sendHtmlEmail(toEmail, subject, htmlContent);
+      
     }
 
     /**
@@ -129,6 +132,7 @@ public class EmailService {
         Mail mail = new Mail(from, subject, to, content);
 
         sendMail(mail);
+        System.out.println("[AUDIT] OTP generated for Email: " + toEmail);
     }
 
     /**
@@ -146,6 +150,7 @@ public class EmailService {
 
             if (statusCode >= 200 && statusCode < 300) {
                 System.out.println("SendGrid Email sent successfully! Status code: " + statusCode);
+                
             } else {
                 System.err.println("Failed to send email via SendGrid. Status code: " + statusCode + ", Body: " + response.getBody());
                 throw new RuntimeException("SendGrid Email dispatch failed with HTTP code " + statusCode);

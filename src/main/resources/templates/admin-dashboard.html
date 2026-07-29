@@ -323,6 +323,31 @@
         .log-type.INFO { color: var(--info); }
         .log-type.SUCCESS { color: var(--success); }
         .log-type.WARN { color: var(--primary); }
+		/* PAGINATION STYLING */
+		.pagination-container {
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		    gap: 15px;
+		    margin-top: 2rem;
+		    padding: 1rem;
+		    background: var(--card);
+		    border: 1px solid var(--border);
+		    border-radius: 12px;
+		}
+
+		.pagination-container .page-info {
+		    font-size: 0.9rem;
+		    font-weight: 600;
+		    color: var(--text-muted);
+		}
+
+		.pagination-container button:disabled {
+		    opacity: 0.4;
+		    cursor: not-allowed;
+		    background: var(--border);
+		    color: var(--text-muted);
+		}
 
         @media (max-width: 768px) {
             .mobile-toggle { display: block; }
@@ -405,20 +430,32 @@
                 </div>
             </section>
 
-            <!-- 2. PHOTO MANAGEMENT & USER FILTER -->
-            <section id="managePhotosSection" class="page-section">
-                <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">User Photos Manager</h1>
-                <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">Filter photos strictly by selected user and execute deletions.</p>
+			<!-- 2. PHOTO MANAGEMENT & USER FILTER -->
+			<section id="managePhotosSection" class="page-section">
+			    <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">User Photos Manager</h1>
+			    <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">Filter photos strictly by selected user and execute deletions.</p>
 
-                <div class="card-panel" style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <select id="userFilterSelect" class="form-control" style="min-width:220px;" onchange="onUserFilterChange()">
-                        <option value="">-- All Registered Users --</option>
-                    </select>
-                    <input type="text" id="adminSearchInput" class="form-control" style="min-width:220px;" placeholder="Search file name..." oninput="filterAdminImages()">
-                </div>
+			    <div class="card-panel" style="display:flex; gap:10px; flex-wrap:wrap;">
+			        <select id="userFilterSelect" class="form-control" style="min-width:220px;" onchange="onUserFilterChange()">
+			            <option value="">-- All Registered Users --</option>
+			        </select>
+			        <input type="text" id="adminSearchInput" class="form-control" style="min-width:220px;" placeholder="Search file name..." oninput="filterAdminImages()">
+			    </div>
 
-                <div id="admin-image-grid" class="image-grid"></div>
-            </section>
+			    <!-- IMAGE GRID -->
+			    <div id="admin-image-grid" class="image-grid"></div>
+
+			    <!-- PAGINATION CONTROLS -->
+			    <div class="pagination-container" id="paginationControls">
+			        <button class="btn-action" id="btnPrevPage" onclick="changeAdminPage(-1)" disabled>
+			            <i class="fa-solid fa-chevron-left"></i> Previous
+			        </button>
+			        <span class="page-info" id="pageInfoText">Page 1 of 1</span>
+			        <button class="btn-action" id="btnNextPage" onclick="changeAdminPage(1)" disabled>
+			            Next <i class="fa-solid fa-chevron-right"></i>
+			        </button>
+			    </div>
+			</section>
 
             <!-- 3. ADD / EDIT USER TAB -->
             <section id="manageUsersSection" class="page-section">
@@ -452,8 +489,8 @@
                         </div>
                         <div class="form-group">
                             <label>Role</label>
-                            <select id="userRoleInput" class="form-control">
-                                <option value="USER">USER</option>
+                            <select id="userRoleInput" class="form-control" required>
+                                <option value="USER" selected >USER</option>
                                 <option value="ADMIN">ADMIN</option>
                             </select>
                         </div>
@@ -513,6 +550,7 @@
         let isEditMode = false;
         let currentPage = 0;
         let pageSize = 24;
+		let totalPages = 1;
 
         const appSidebar = document.getElementById('appSidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -695,25 +733,72 @@
         }
 
         /* FETCH IMAGES FILTERED BY SELECTED USER */
-        async function loadAdminImages() {
-            const search = document.getElementById('adminSearchInput').value;
-            let url = `/api/admin/images?page=${currentPage}&size=${pageSize}&search=${encodeURIComponent(search)}`;
-            
-            if (selectedRegNo) {
-                url += `&regNo=${encodeURIComponent(selectedRegNo)}`;
-            }
+		// State variables for pagination
 
-            try {
-                const res = await fetch(url);
-                if (!res.ok) throw new Error("Failed to load images");
 
-                const page = await res.json();
-                renderAdminGrid(page.content);
-                appendLog("SUCCESS", `GET /api/admin/images - Loaded ${page.content.length} records`);
-            } catch (err) {
-                appendLog("WARN", "Failed to load admin image grid");
-            }
-        }
+		/* FETCH IMAGES FILTERED BY SELECTED USER & PAGINATED */
+		async function loadAdminImages() {
+		    const search = document.getElementById('adminSearchInput').value;
+		    let url = `/api/admin/images?page=${currentPage}&size=${pageSize}&search=${encodeURIComponent(search)}`;
+		    
+		    if (selectedRegNo) {
+		        url += `&regNo=${encodeURIComponent(selectedRegNo)}`;
+		    }
+
+		    try {
+		        const res = await fetch(url);
+		        if (!res.ok) throw new Error("Failed to load images");
+
+		        const page = await res.json();
+		        
+		        // Update global page state from Spring Data Page response
+		        totalPages = page.totalPages || 1;
+		        
+		        renderAdminGrid(page.content);
+		        renderPaginationControls(page);
+		        
+		        appendLog("SUCCESS", `GET /api/admin/images - Page ${currentPage + 1} of ${totalPages} (${page.totalElements || 0} total images)`);
+		    } catch (err) {
+		        appendLog("WARN", "Failed to load admin image grid");
+		    }
+		}
+
+		/* RENDER PAGINATION BUTTONS & PAGE INFO */
+		function renderPaginationControls(pageData) {
+		    const prevBtn = document.getElementById('btnPrevPage');
+		    const nextBtn = document.getElementById('btnNextPage');
+		    const pageInfo = document.getElementById('pageInfoText');
+
+		    if (!pageData || pageData.totalElements === 0) {
+		        prevBtn.disabled = true;
+		        nextBtn.disabled = true;
+		        pageInfo.textContent = "Page 0 of 0";
+		        return;
+		    }
+
+		    // Spring Data JPA returns 'first', 'last', 'totalPages'
+		    prevBtn.disabled = pageData.first;
+		    nextBtn.disabled = pageData.last;
+
+		    pageInfo.textContent = `Page ${pageData.number + 1} of ${pageData.totalPages} (${pageData.totalElements} photos)`;
+		}
+
+		/* CHANGE PAGE ACTION */
+		function changeAdminPage(delta) {
+		    const newPage = currentPage + delta;
+		    if (newPage >= 0 && newPage < totalPages) {
+		        currentPage = newPage;
+		        loadAdminImages();
+		        // Smooth scroll back to top of section
+		        document.getElementById('managePhotosSection').scrollIntoView({ behavior: 'smooth' });
+		    }
+		}
+
+
+		function filterAdminImages() {
+		    currentPage = 0; // Reset to first page on search
+		    loadAdminImages();
+		}
 
         function renderAdminGrid(images) {
             const grid = document.getElementById('admin-image-grid');
@@ -760,10 +845,6 @@
             loadAdminImages();
         }
 
-        function filterAdminImages() {
-            currentPage = 0;
-            loadAdminImages();
-        }
 
         function appendLog(type, msg) {
             const body = document.getElementById('logTerminalBody');
@@ -778,6 +859,61 @@
 
         function clearLogs() { document.getElementById('logTerminalBody').innerHTML = ""; }
         function handleLogout() { window.location.href = '/'; }
+		
+		/* GLOBAL AJAX NETWORK INTERCEPTOR */
+		(function interceptFetchRequests() {
+		    const originalFetch = window.fetch;
+		    window.fetch = async function (...args) {
+		        const url = typeof args[0] === 'string' ? args[0] : args[0].url;
+		        const method = (args[1] && args[1].method) ? args[1].method.toUpperCase() : 'GET';
+
+		        // Filter out routine log polling requests to prevent infinite loops
+		        if (!url.includes('/api/admin/logs')) {
+		            appendLog("INFO", `[FETCH REQ] ${method} ${url}`);
+		        }
+
+		        try {
+		            const response = await originalFetch.apply(this, args);
+		            if (!url.includes('/api/admin/logs')) {
+		                const logType = response.ok ? "SUCCESS" : "WARN";
+		                appendLog(logType, `[FETCH RES] ${method} ${url} -> Status ${response.status}`);
+		            }
+		            return response;
+		        } catch (error) {
+		            if (!url.includes('/api/admin/logs')) {
+		                appendLog("WARN", `[FETCH ERROR] ${method} ${url} failed`);
+		            }
+		            throw error;
+		        }
+		    };
+		})();
+		
+		// Poll system logs every 3 seconds
+		setInterval(fetchSystemWideLogs, 3000);
+
+		async function fetchSystemWideLogs() {
+		    try {
+		        const res = await fetch('/api/admin/logs');
+		        if (res.ok) {
+		            const logs = await res.json();
+		            const logContainer = document.getElementById('logTerminalBody');
+		            
+		            // Render logs in terminal
+		            logContainer.innerHTML = '';
+		            logs.forEach(log => {
+		                const logLine = document.createElement('div');
+		                logLine.className = 'log-line';
+		                logLine.textContent = log;
+		                logContainer.appendChild(logLine);
+		            });
+		            
+		            // Auto scroll to bottom
+		            logContainer.scrollTop = logContainer.scrollHeight;
+		        }
+		    } catch (err) {
+		        // Silent catch for background polling
+		    }
+		}
     </script>
 </body>
 </html>

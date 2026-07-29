@@ -5,6 +5,8 @@ import com.msc.memories.model.Image;
 import com.msc.memories.model.User;
 import com.msc.memories.repository.ImageRepository;
 import com.msc.memories.repository.UserRepository;
+import com.msc.memories.service.SystemLogService;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,11 +29,14 @@ public class AdminController {
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SystemLogService systemLogService;
 
-    public AdminController(UserRepository userRepository, ImageRepository imageRepository, PasswordEncoder passwordEncoder) {
+
+    public AdminController(UserRepository userRepository, SystemLogService systemLogService,ImageRepository imageRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.imageRepository = imageRepository;
         this.passwordEncoder = passwordEncoder;
+        this.systemLogService = systemLogService;
     }
 
     /**
@@ -220,5 +225,11 @@ public class AdminController {
         dto.setPublicId(img.getPublicId());
         dto.setUploadedAt(img.getUploadedAt());
         return dto;
+    }
+    
+    
+    @GetMapping("/logs")
+    public ResponseEntity<List<String>> fetchSystemLogs() {
+        return ResponseEntity.ok(systemLogService.getRecentLogs());
     }
 }
