@@ -277,10 +277,11 @@
         .btn-action.btn-danger { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
         .btn-action.btn-danger:hover { background: var(--danger); color: #fff; }
 
-        /* USER DIRECTORY TABLE */
+        /* USER DIRECTORY & AUDIT LOG TABLES */
         .table-responsive {
             overflow-x: auto;
             margin-top: 1rem;
+            border-radius: 8px;
         }
 
         table.user-table {
@@ -288,6 +289,7 @@
             border-collapse: collapse;
             text-align: left;
             font-size: 0.85rem;
+            white-space: nowrap;
         }
 
         table.user-table th, table.user-table td {
@@ -295,7 +297,19 @@
             border-bottom: 1px solid var(--border);
         }
 
-        table.user-table th { background: rgba(15, 23, 42, 0.5); color: var(--text-muted); }
+        table.user-table th { background: rgba(15, 23, 42, 0.8); color: var(--text-muted); }
+
+        /* ACTION BADGES */
+        .badge-action {
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+        .badge-action.LOGIN_SUCCESS { background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .badge-action.LOGIN_FAILED { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-action.LOGOUT { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
 
         /* GALLERY GRID */
         .image-grid {
@@ -323,31 +337,32 @@
         .log-type.INFO { color: var(--info); }
         .log-type.SUCCESS { color: var(--success); }
         .log-type.WARN { color: var(--primary); }
-		/* PAGINATION STYLING */
-		.pagination-container {
-		    display: flex;
-		    align-items: center;
-		    justify-content: center;
-		    gap: 15px;
-		    margin-top: 2rem;
-		    padding: 1rem;
-		    background: var(--card);
-		    border: 1px solid var(--border);
-		    border-radius: 12px;
-		}
 
-		.pagination-container .page-info {
-		    font-size: 0.9rem;
-		    font-weight: 600;
-		    color: var(--text-muted);
-		}
+        /* PAGINATION STYLING */
+        .pagination-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
 
-		.pagination-container button:disabled {
-		    opacity: 0.4;
-		    cursor: not-allowed;
-		    background: var(--border);
-		    color: var(--text-muted);
-		}
+        .pagination-container .page-info {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .pagination-container button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: var(--border);
+            color: var(--text-muted);
+        }
 
         @media (max-width: 768px) {
             .mobile-toggle { display: block; }
@@ -392,6 +407,9 @@
             <div class="nav-item" onclick="switchTab('manageUsersSection', this)">
                 <i class="fa-solid fa-user-plus"></i> Add & Edit Users
             </div>
+            <div class="nav-item" onclick="switchTab('auditLogsSection', this)">
+                <i class="fa-solid fa-clock-rotate-left"></i> User Activity Logs
+            </div>
             <div class="nav-item" onclick="switchTab('logsSection', this)">
                 <i class="fa-solid fa-terminal"></i> Live AJAX Logs
             </div>
@@ -405,57 +423,72 @@
                 <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">System Overview</h1>
                 <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Live analytics across platform users and media repository.</p>
 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <h3>Total Users</h3>
-                            <p id="statTotalUsers">0</p>
-                        </div>
-                        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <h3>Total Photos</h3>
-                            <p id="statTotalPhotos">0</p>
-                        </div>
-                        <div class="stat-icon"><i class="fa-solid fa-photo-film"></i></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <h3>Server Status</h3>
-                            <p style="color: var(--success); font-size: 1.25rem; margin-top: 6px;">ONLINE</p>
-                        </div>
-                        <div class="stat-icon" style="color: var(--success); background: rgba(34, 197, 94, 0.1);"><i class="fa-solid fa-server"></i></div>
-                    </div>
-                </div>
+				<div class="stats-grid">
+				    <div class="stat-card">
+				        <div class="stat-info">
+				            <h3>Total Users</h3>
+				            <p id="statTotalUsers">0</p>
+				        </div>
+				        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+				    </div>
+
+				    <!-- Active Users Card -->
+				    <div class="stat-card">
+				        <div class="stat-info">
+				            <h3>Active Users</h3>
+				            <p id="statActiveUsers" style="color: var(--primary);">0</p>
+				        </div>
+				        <div class="stat-icon" style="color: var(--primary); background: rgba(255, 215, 0, 0.1);">
+				            <i class="fa-solid fa-user-check"></i>
+				        </div>
+				    </div>
+
+				    <div class="stat-card">
+				        <div class="stat-info">
+				            <h3>Total Photos</h3>
+				            <p id="statTotalPhotos">0</p>
+				        </div>
+				        <div class="stat-icon"><i class="fa-solid fa-photo-film"></i></div>
+				    </div>
+
+				    <div class="stat-card">
+				        <div class="stat-info">
+				            <h3>Server Status</h3>
+				            <p id="statServerStatus" style="color: var(--success); font-size: 1.25rem; margin-top: 6px;">ONLINE</p>
+				        </div>
+				        <div id="statServerIcon" class="stat-icon" style="color: var(--success); background: rgba(34, 197, 94, 0.1);">
+				            <i class="fa-solid fa-server"></i>
+				        </div>
+				    </div>
+				</div>
             </section>
 
-			<!-- 2. PHOTO MANAGEMENT & USER FILTER -->
-			<section id="managePhotosSection" class="page-section">
-			    <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">User Photos Manager</h1>
-			    <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">Filter photos strictly by selected user and execute deletions.</p>
+            <!-- 2. PHOTO MANAGEMENT & USER FILTER -->
+            <section id="managePhotosSection" class="page-section">
+                <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">User Photos Manager</h1>
+                <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">Filter photos strictly by selected user and execute deletions.</p>
 
-			    <div class="card-panel" style="display:flex; gap:10px; flex-wrap:wrap;">
-			        <select id="userFilterSelect" class="form-control" style="min-width:220px;" onchange="onUserFilterChange()">
-			            <option value="">-- All Registered Users --</option>
-			        </select>
-			        <input type="text" id="adminSearchInput" class="form-control" style="min-width:220px;" placeholder="Search file name..." oninput="filterAdminImages()">
-			    </div>
+                <div class="card-panel" style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <select id="userFilterSelect" class="form-control" style="min-width:220px;" onchange="onUserFilterChange()">
+                        <option value="">-- All Registered Users --</option>
+                    </select>
+                    <input type="text" id="adminSearchInput" class="form-control" style="min-width:220px;" placeholder="Search file name..." oninput="filterAdminImages()">
+                </div>
 
-			    <!-- IMAGE GRID -->
-			    <div id="admin-image-grid" class="image-grid"></div>
+                <!-- IMAGE GRID -->
+                <div id="admin-image-grid" class="image-grid"></div>
 
-			    <!-- PAGINATION CONTROLS -->
-			    <div class="pagination-container" id="paginationControls">
-			        <button class="btn-action" id="btnPrevPage" onclick="changeAdminPage(-1)" disabled>
-			            <i class="fa-solid fa-chevron-left"></i> Previous
-			        </button>
-			        <span class="page-info" id="pageInfoText">Page 1 of 1</span>
-			        <button class="btn-action" id="btnNextPage" onclick="changeAdminPage(1)" disabled>
-			            Next <i class="fa-solid fa-chevron-right"></i>
-			        </button>
-			    </div>
-			</section>
+                <!-- PAGINATION CONTROLS -->
+                <div class="pagination-container" id="paginationControls">
+                    <button class="btn-action" id="btnPrevPage" onclick="changeAdminPage(-1)" disabled>
+                        <i class="fa-solid fa-chevron-left"></i> Previous
+                    </button>
+                    <span class="page-info" id="pageInfoText">Page 1 of 1</span>
+                    <button class="btn-action" id="btnNextPage" onclick="changeAdminPage(1)" disabled>
+                        Next <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
 
             <!-- 3. ADD / EDIT USER TAB -->
             <section id="manageUsersSection" class="page-section">
@@ -490,7 +523,7 @@
                         <div class="form-group">
                             <label>Role</label>
                             <select id="userRoleInput" class="form-control" required>
-                                <option value="USER" selected >USER</option>
+                                <option value="USER" selected>USER</option>
                                 <option value="ADMIN">ADMIN</option>
                             </select>
                         </div>
@@ -525,7 +558,47 @@
                 </div>
             </section>
 
-            <!-- 4. LIVE LOGS -->
+            <!-- 4. PERSISTENT USER ACTIVITY / AUDIT LOGS -->
+            <section id="auditLogsSection" class="page-section">
+                <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">User Activity Logs</h1>
+                <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">Historical login, logout, and user authentication events recorded in PostgreSQL.</p>
+
+                <div class="card-panel">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <input type="text" id="auditSearchInput" class="form-control" style="max-width:300px;" placeholder="Search reg no or action..." oninput="loadAuditLogs()">
+                        <button class="btn-action" onclick="loadAuditLogs()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User ID / Reg No</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                    <th>IP Address</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditLogsTableBody">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination-container" id="auditPaginationControls">
+                        <button class="btn-action" id="auditBtnPrev" onclick="changeAuditPage(-1)" disabled>
+                            <i class="fa-solid fa-chevron-left"></i> Previous
+                        </button>
+                        <span class="page-info" id="auditPageInfoText">Page 1 of 1</span>
+                        <button class="btn-action" id="auditBtnNext" onclick="changeAuditPage(1)" disabled>
+                            Next <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. LIVE AJAX LOGS -->
             <section id="logsSection" class="page-section">
                 <h1 style="margin-bottom: 0.25rem; font-size: 1.5rem;">Live System Logs</h1>
                 <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">Real-time AJAX network event feed.</p>
@@ -550,7 +623,12 @@
         let isEditMode = false;
         let currentPage = 0;
         let pageSize = 24;
-		let totalPages = 1;
+        let totalPages = 1;
+
+        // Audit Logs State
+        let auditCurrentPage = 0;
+        let auditPageSize = 15;
+        let auditTotalPages = 1;
 
         const appSidebar = document.getElementById('appSidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -583,6 +661,11 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
             if (navElem) navElem.classList.add('active');
+
+            if (sectionId === 'auditLogsSection') {
+                loadAuditLogs();
+            }
+
             closeSidebar();
         }
 
@@ -601,66 +684,154 @@
         }
 
         /* FETCH STATS & USERS DIRECTORY */
-        async function fetchAdminStats() {
-            try {
-                const res = await fetch('/api/admin/stats');
-                if (res.ok) {
-                    const data = await res.json();
-                    document.getElementById('statTotalUsers').textContent = data.totalUsers || 0;
-                    document.getElementById('statTotalPhotos').textContent = data.totalPhotos || 0;
-                }
-            } catch (err) {}
-        }
+		async function fetchAdminStats() {
+		    const statusText = document.getElementById('statServerStatus');
+		    const statusIcon = document.getElementById('statServerIcon');
 
-		/* FETCH STATS, DROPDOWN & FULL USER DIRECTORY */
-		async function loadUserDropdownAndDirectory() {
 		    try {
-		        // 1. Fetch Students/Non-Admins for Photo Filter Dropdown
-		        const dropdownRes = await fetch('/api/admin/users/students-only');
-		        if (dropdownRes.ok) {
-		            const students = await dropdownRes.json();
-		            const select = document.getElementById('userFilterSelect');
-		            select.innerHTML = '<option value="">-- All Registered Users --</option>';
+		        const res = await fetch('/api/admin/stats');
+		        if (res.ok) {
+		            const data = await res.json();
+		            
+		            document.getElementById('statTotalUsers').textContent = data.totalUsers || 0;
+		            document.getElementById('statActiveUsers').textContent = data.activeUsers || 0; // Populate Active Users
+		            document.getElementById('statTotalPhotos').textContent = data.totalPhotos || 0;
 
-		            students.forEach(s => {
-		                const opt = document.createElement('option');
-		                opt.value = s.registrationNumber;
-		                opt.textContent = `${s.name} (${s.registrationNumber})`;
-		                select.appendChild(opt);
-		            });
-		        }
-
-		        // 2. Fetch ALL Users (Admins + Users) for Directory Table
-		        const allUsersRes = await fetch('/api/admin/users');
-		        if (allUsersRes.ok) {
-		            const allUsers = await allUsersRes.json();
-		            const tbody = document.getElementById('userDirectoryTable');
-		            tbody.innerHTML = '';
-
-		            allUsers.forEach(u => {
-		                const isAdmin = u.role && (u.role.toUpperCase() === 'ADMIN' || u.role.toUpperCase() === 'ROLE_ADMIN');
-		                const roleBadgeColor = isAdmin ? 'var(--danger)' : 'var(--primary)';
-
-		                const tr = document.createElement('tr');
-		                tr.innerHTML = `
-		                    <td><strong>${u.registrationNumber}</strong></td>
-		                    <td>${u.name}</td>
-		                    <td>${u.email}</td>
-		                    <td>${u.phoneNumber || 'N/A'}</td>
-		                    <td><span style="color:${roleBadgeColor}; font-weight:700;">${u.role}</span></td>
-		                    <td>
-		                        <button class="btn-action" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick='editUser(${JSON.stringify(u)})'>
-		                            <i class="fa-solid fa-pen"></i> Edit
-		                        </button>
-		                    </td>
-		                `;
-		                tbody.appendChild(tr);
-		            });
+		            if (statusText && statusIcon) {
+		                statusText.textContent = "ONLINE";
+		                statusText.style.color = "var(--success)";
+		                statusIcon.style.color = "var(--success)";
+		                statusIcon.style.background = "rgba(34, 197, 94, 0.1)";
+		            }
+		        } else {
+		            throw new Error("Server error");
 		        }
 		    } catch (err) {
-		        appendLog("WARN", "Failed to load user directory");
+		        if (statusText && statusIcon) {
+		            statusText.textContent = "OFFLINE";
+		            statusText.style.color = "var(--danger)";
+		            statusIcon.style.color = "var(--danger)";
+		            statusIcon.style.background = "rgba(239, 68, 68, 0.1)";
+		        }
 		    }
 		}
+
+        /* FETCH STATS, DROPDOWN & FULL USER DIRECTORY */
+        async function loadUserDropdownAndDirectory() {
+            try {
+                const dropdownRes = await fetch('/api/admin/users/students-only');
+                if (dropdownRes.ok) {
+                    const students = await dropdownRes.json();
+                    const select = document.getElementById('userFilterSelect');
+                    select.innerHTML = '<option value="">-- All Registered Users --</option>';
+
+                    students.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.registrationNumber;
+                        opt.textContent = `${s.name} (${s.registrationNumber})`;
+                        select.appendChild(opt);
+                    });
+                }
+
+                const allUsersRes = await fetch('/api/admin/users');
+                if (allUsersRes.ok) {
+                    const allUsers = await allUsersRes.json();
+                    const tbody = document.getElementById('userDirectoryTable');
+                    tbody.innerHTML = '';
+
+                    allUsers.forEach(u => {
+                        const isAdmin = u.role && (u.role.toUpperCase() === 'ADMIN' || u.role.toUpperCase() === 'ROLE_ADMIN');
+                        const roleBadgeColor = isAdmin ? 'var(--danger)' : 'var(--primary)';
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong>${u.registrationNumber}</strong></td>
+                            <td>${u.name}</td>
+                            <td>${u.email}</td>
+                            <td>${u.phoneNumber || 'N/A'}</td>
+                            <td><span style="color:${roleBadgeColor}; font-weight:700;">${u.role}</span></td>
+                            <td>
+                                <button class="btn-action" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick='editUser(${JSON.stringify(u)})'>
+                                    <i class="fa-solid fa-pen"></i> Edit
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (err) {
+                appendLog("WARN", "Failed to load user directory");
+            }
+        }
+
+        /* FETCH AUDIT / LOGIN LOGS FROM POSTGRESQL */
+        async function loadAuditLogs() {
+            const search = document.getElementById('auditSearchInput').value;
+            const url = `/api/admin/audit-logs?page=${auditCurrentPage}&size=${auditPageSize}&search=${encodeURIComponent(search)}`;
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("Failed to load audit logs");
+
+                const page = await res.json();
+                auditTotalPages = page.totalPages || 1;
+
+                renderAuditLogsTable(page.content);
+                renderAuditPaginationControls(page);
+            } catch (err) {
+                appendLog("WARN", "Failed to load activity logs");
+            }
+        }
+
+        function renderAuditLogsTable(logs) {
+            const tbody = document.getElementById('auditLogsTableBody');
+            tbody.innerHTML = '';
+
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 1.5rem;">No activity logs found.</td></tr>`;
+                return;
+            }
+
+            logs.forEach(log => {
+                const timeStr = log.timestamp ? new Date(log.timestamp).toLocaleString() : 'N/A';
+                const actionClass = log.action || 'INFO';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${timeStr}</td>
+                    <td><strong>${log.registrationNumber}</strong></td>
+                    <td><span class="badge-action ${actionClass}">${log.action}</span></td>
+                    <td>${log.details || 'N/A'}</td>
+                    <td><code>${log.ipAddress || '127.0.0.1'}</code></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderAuditPaginationControls(pageData) {
+            const prevBtn = document.getElementById('auditBtnPrev');
+            const nextBtn = document.getElementById('auditBtnNext');
+            const pageInfo = document.getElementById('auditPageInfoText');
+
+            if (!pageData || pageData.totalElements === 0) {
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                pageInfo.textContent = "Page 0 of 0";
+                return;
+            }
+
+            prevBtn.disabled = pageData.first;
+            nextBtn.disabled = pageData.last;
+            pageInfo.textContent = `Page ${pageData.number + 1} of ${pageData.totalPages} (${pageData.totalElements} records)`;
+        }
+
+        function changeAuditPage(delta) {
+            const newPage = auditCurrentPage + delta;
+            if (newPage >= 0 && newPage < auditTotalPages) {
+                auditCurrentPage = newPage;
+                loadAuditLogs();
+            }
+        }
 
         /* CREATE OR UPDATE USER ACCOUNT */
         async function saveUser() {
@@ -705,7 +876,7 @@
             isEditMode = true;
             const regInput = document.getElementById('userRegNoInput');
             regInput.value = user.registrationNumber || '';
-            regInput.disabled = true; // Primary Key cannot be edited
+            regInput.disabled = true;
 
             document.getElementById('userNameInput').value = user.name || '';
             document.getElementById('userEmailInput').value = user.email || '';
@@ -732,73 +903,61 @@
             document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-user-plus" style="color: var(--primary);"></i> Create New Account`;
         }
 
-        /* FETCH IMAGES FILTERED BY SELECTED USER */
-		// State variables for pagination
+        /* FETCH IMAGES FILTERED BY SELECTED USER & PAGINATED */
+        async function loadAdminImages() {
+            const search = document.getElementById('adminSearchInput').value;
+            let url = `/api/admin/images?page=${currentPage}&size=${pageSize}&search=${encodeURIComponent(search)}`;
+            
+            if (selectedRegNo) {
+                url += `&regNo=${encodeURIComponent(selectedRegNo)}`;
+            }
 
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("Failed to load images");
 
-		/* FETCH IMAGES FILTERED BY SELECTED USER & PAGINATED */
-		async function loadAdminImages() {
-		    const search = document.getElementById('adminSearchInput').value;
-		    let url = `/api/admin/images?page=${currentPage}&size=${pageSize}&search=${encodeURIComponent(search)}`;
-		    
-		    if (selectedRegNo) {
-		        url += `&regNo=${encodeURIComponent(selectedRegNo)}`;
-		    }
+                const page = await res.json();
+                totalPages = page.totalPages || 1;
+                
+                renderAdminGrid(page.content);
+                renderPaginationControls(page);
+                
+                appendLog("SUCCESS", `GET /api/admin/images - Page ${currentPage + 1} of ${totalPages} (${page.totalElements || 0} total images)`);
+            } catch (err) {
+                appendLog("WARN", "Failed to load admin image grid");
+            }
+        }
 
-		    try {
-		        const res = await fetch(url);
-		        if (!res.ok) throw new Error("Failed to load images");
+        function renderPaginationControls(pageData) {
+            const prevBtn = document.getElementById('btnPrevPage');
+            const nextBtn = document.getElementById('btnNextPage');
+            const pageInfo = document.getElementById('pageInfoText');
 
-		        const page = await res.json();
-		        
-		        // Update global page state from Spring Data Page response
-		        totalPages = page.totalPages || 1;
-		        
-		        renderAdminGrid(page.content);
-		        renderPaginationControls(page);
-		        
-		        appendLog("SUCCESS", `GET /api/admin/images - Page ${currentPage + 1} of ${totalPages} (${page.totalElements || 0} total images)`);
-		    } catch (err) {
-		        appendLog("WARN", "Failed to load admin image grid");
-		    }
-		}
+            if (!pageData || pageData.totalElements === 0) {
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                pageInfo.textContent = "Page 0 of 0";
+                return;
+            }
 
-		/* RENDER PAGINATION BUTTONS & PAGE INFO */
-		function renderPaginationControls(pageData) {
-		    const prevBtn = document.getElementById('btnPrevPage');
-		    const nextBtn = document.getElementById('btnNextPage');
-		    const pageInfo = document.getElementById('pageInfoText');
+            prevBtn.disabled = pageData.first;
+            nextBtn.disabled = pageData.last;
+            pageInfo.textContent = `Page ${pageData.number + 1} of ${pageData.totalPages} (${pageData.totalElements} photos)`;
+        }
 
-		    if (!pageData || pageData.totalElements === 0) {
-		        prevBtn.disabled = true;
-		        nextBtn.disabled = true;
-		        pageInfo.textContent = "Page 0 of 0";
-		        return;
-		    }
+        function changeAdminPage(delta) {
+            const newPage = currentPage + delta;
+            if (newPage >= 0 && newPage < totalPages) {
+                currentPage = newPage;
+                loadAdminImages();
+                document.getElementById('managePhotosSection').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
 
-		    // Spring Data JPA returns 'first', 'last', 'totalPages'
-		    prevBtn.disabled = pageData.first;
-		    nextBtn.disabled = pageData.last;
-
-		    pageInfo.textContent = `Page ${pageData.number + 1} of ${pageData.totalPages} (${pageData.totalElements} photos)`;
-		}
-
-		/* CHANGE PAGE ACTION */
-		function changeAdminPage(delta) {
-		    const newPage = currentPage + delta;
-		    if (newPage >= 0 && newPage < totalPages) {
-		        currentPage = newPage;
-		        loadAdminImages();
-		        // Smooth scroll back to top of section
-		        document.getElementById('managePhotosSection').scrollIntoView({ behavior: 'smooth' });
-		    }
-		}
-
-
-		function filterAdminImages() {
-		    currentPage = 0; // Reset to first page on search
-		    loadAdminImages();
-		}
+        function filterAdminImages() {
+            currentPage = 0;
+            loadAdminImages();
+        }
 
         function renderAdminGrid(images) {
             const grid = document.getElementById('admin-image-grid');
@@ -845,7 +1004,6 @@
             loadAdminImages();
         }
 
-
         function appendLog(type, msg) {
             const body = document.getElementById('logTerminalBody');
             if (!body) return;
@@ -859,36 +1017,35 @@
 
         function clearLogs() { document.getElementById('logTerminalBody').innerHTML = ""; }
         function handleLogout() { window.location.href = '/'; }
-		
-		/* GLOBAL AJAX NETWORK INTERCEPTOR */
-		(function interceptFetchRequests() {
-		    const originalFetch = window.fetch;
-		    window.fetch = async function (...args) {
-		        const url = typeof args[0] === 'string' ? args[0] : args[0].url;
-		        const method = (args[1] && args[1].method) ? args[1].method.toUpperCase() : 'GET';
 
-		        // Filter out routine log polling requests to prevent infinite loops
-		        if (!url.includes('/api/admin/logs')) {
-		            appendLog("INFO", `[FETCH REQ] ${method} ${url}`);
-		        }
+        /* GLOBAL AJAX NETWORK INTERCEPTOR */
+        (function interceptFetchRequests() {
+            const originalFetch = window.fetch;
+            window.fetch = async function (...args) {
+                const url = typeof args[0] === 'string' ? args[0] : args[0].url;
+                const method = (args[1] && args[1].method) ? args[1].method.toUpperCase() : 'GET';
 
-		        try {
-		            const response = await originalFetch.apply(this, args);
-		            if (!url.includes('/api/admin/logs')) {
-		                const logType = response.ok ? "SUCCESS" : "WARN";
-		                appendLog(logType, `[FETCH RES] ${method} ${url} -> Status ${response.status}`);
-		            }
-		            return response;
-		        } catch (error) {
-		            if (!url.includes('/api/admin/logs')) {
-		                appendLog("WARN", `[FETCH ERROR] ${method} ${url} failed`);
-		            }
-		            throw error;
-		        }
-		    };
-		})();
-		
-		// Poll system logs every 3 seconds
+                if (!url.includes('/api/admin/logs')) {
+                    appendLog("INFO", `[FETCH REQ] ${method} ${url}`);
+                }
+
+                try {
+                    const response = await originalFetch.apply(this, args);
+                    if (!url.includes('/api/admin/logs')) {
+                        const logType = response.ok ? "SUCCESS" : "WARN";
+                        appendLog(logType, `[FETCH RES] ${method} ${url} -> Status ${response.status}`);
+                    }
+                    return response;
+                } catch (error) {
+                    if (!url.includes('/api/admin/logs')) {
+                        appendLog("WARN", `[FETCH ERROR] ${method} ${url} failed`);
+                    }
+                    throw error;
+                }
+            };
+        })();
+
+
 		setInterval(fetchSystemWideLogs, 3000);
 
 		async function fetchSystemWideLogs() {
@@ -896,22 +1053,22 @@
 		        const res = await fetch('/api/admin/logs');
 		        if (res.ok) {
 		            const logs = await res.json();
-		            const logContainer = document.getElementById('logTerminalBody');
 		            
-		            // Render logs in terminal
-		            logContainer.innerHTML = '';
-		            logs.forEach(log => {
-		                const logLine = document.createElement('div');
-		                logLine.className = 'log-line';
-		                logLine.textContent = log;
-		                logContainer.appendChild(logLine);
-		            });
-		            
-		            // Auto scroll to bottom
-		            logContainer.scrollTop = logContainer.scrollHeight;
+		            // Fix: Only update if there are logs returned from the server!
+		            if (logs && logs.length > 0) {
+		                const logContainer = document.getElementById('logTerminalBody');
+		                logs.forEach(log => {
+		                    const logLine = document.createElement('div');
+		                    logLine.className = 'log-line';
+		                    logLine.innerHTML = `<span class="log-time">[${new Date().toLocaleTimeString()}]</span> <span class="log-type INFO">SERVER</span> <span>${log}</span>`;
+		                    logContainer.appendChild(logLine);
+		                });
+		                logContainer.scrollTop = logContainer.scrollHeight;
+		            }
 		        }
 		    } catch (err) {
-		        // Silent catch for background polling
+		        // Silent fail for polling errors
+				console.log(err);
 		    }
 		}
     </script>

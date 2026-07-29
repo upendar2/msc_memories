@@ -7,22 +7,40 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.msc.memories.service.AuditLogService;
 import com.msc.memories.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 public class SecurityConfig {
+	private final AuditLogService auditLogService;
+
+    public SecurityConfig(AuditLogService auditLogService) {
+        this.auditLogService = auditLogService;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+ // 2. Event publisher to notify SessionRegistry when a session is destroyed/invalidated
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 
     @Bean
@@ -98,6 +116,10 @@ public class SecurityConfig {
                             .map(GrantedAuthority::getAuthority)
                             .findFirst()
                             .orElse("USER");
+                    String ip = request.getRemoteAddr();
+
+                    // Record DB Audit Log
+                    auditLogService.logActivity(username, username, "LOGIN_SUCCESS", "User logged in via form", ip);
 
                     // 1. SUCCESSFUL LOGIN LOG
                     System.out.println("[AUTH SUCCESS] User logged in: " + username + " | Role: " + role);
@@ -120,6 +142,8 @@ public class SecurityConfig {
 
                 .failureHandler((request, response, exception) -> {
                     String usernameAttempt = request.getParameter("username");
+                    String ip = request.getRemoteAddr();
+                    auditLogService.logActivity(usernameAttempt != null ? usernameAttempt : "UNKNOWN", "N/A", "LOGIN_FAILED", exception.getMessage(), ip);
 
                     // 2. FAILED LOGIN LOG
                     System.err.println("[AUTH FAILURE] Failed login attempt for ID/Email: " + usernameAttempt + " | Reason: " + exception.getMessage());
@@ -136,6 +160,10 @@ public class SecurityConfig {
                 })
                 .permitAll()
             )
+            .sessionManagement(session -> session
+                    .maximumSessions(-1) // Allow multiple active sessions if needed, or set to 1
+                    .sessionRegistry(sessionRegistry()) // Register SessionRegistry
+                )
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .addLogoutHandler((request, response, authentication) -> {

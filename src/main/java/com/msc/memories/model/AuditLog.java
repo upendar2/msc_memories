@@ -1,0 +1,62 @@
+package com.msc.memories.model;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "audit_logs")
+public class AuditLog {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String registrationNumber;
+
+    private String userName;
+
+    @Column(nullable = false)
+    private String action; // e.g., "LOGIN", "LOGOUT", "PASSWORD_RESET_OTP", "IMAGE_DELETE"
+
+    @Column(length = 500)
+    private String details;
+
+    private String ipAddress;
+
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
+
+    public AuditLog() {}
+
+    public AuditLog(String registrationNumber, String userName, String action, String details, String ipAddress) {
+        this.registrationNumber = registrationNumber;
+        this.userName = userName;
+        this.action = action;
+        this.details = details;
+        this.ipAddress = ipAddress;
+        this.timestamp = LocalDateTime.now();
+    }
+
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getRegistrationNumber() { return registrationNumber; }
+    public void setRegistrationNumber(String registrationNumber) { this.registrationNumber = registrationNumber; }
+
+    public String getUserName() { return userName; }
+    public void setUserName(String userName) { this.userName = userName; }
+
+    public String getAction() { return action; }
+    public void setAction(String action) { this.action = action; }
+
+    public String getDetails() { return details; }
+    public void setDetails(String details) { this.details = details; }
+
+    public String getIpAddress() { return ipAddress; }
+    public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
+
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+}
