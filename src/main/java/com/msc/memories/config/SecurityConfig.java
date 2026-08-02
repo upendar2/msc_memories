@@ -8,6 +8,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl; // <--- ADD THIS IMPORT
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,11 +24,16 @@ import jakarta.servlet.http.HttpServletResponse;
 public class SecurityConfig {
 
     private final AuditLogService auditLogService;
-    private final SessionRegistry sessionRegistry;
 
-    public SecurityConfig(AuditLogService auditLogService, SessionRegistry sessionRegistry) {
+    // Remove SessionRegistry from constructor injection
+    public SecurityConfig(AuditLogService auditLogService) {
         this.auditLogService = auditLogService;
-        this.sessionRegistry = sessionRegistry;
+    }
+
+    // Define the SessionRegistry Bean here
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 
     @Bean
@@ -43,7 +49,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, DaoAuthenticationProvider authenticationProvider)
+    SecurityFilterChain securityFilterChain(HttpSecurity http, DaoAuthenticationProvider authenticationProvider, SessionRegistry sessionRegistry)
             throws Exception {
 
         http
@@ -54,9 +60,8 @@ public class SecurityConfig {
                 .authenticationEntryPoint((request, response, authException) -> {
                     String ip = request.getRemoteAddr();
                     String uri = request.getRequestURI();
-                    String username = request.getUserPrincipal() != null ? request.getUserPrincipal().getName() : "UNKNOWN";
-                    auditLogService.logActivity(username, username, "UNAUTHORIZED_ACCESS", 
-                        "unauthenticated access Detect: " + uri, ip);
+                    auditLogService.logActivity("ANONYMOUS", "N/A", "UNAUTHORIZED_ACCESS", 
+                        "Attempted unauthenticated access to: " + uri, ip);
 
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
@@ -165,7 +170,6 @@ public class SecurityConfig {
                     String user = (usernameAttempt != null && !usernameAttempt.isBlank()) ? usernameAttempt : "UNKNOWN";
                     String pwd = (passwordAttempt != null && !passwordAttempt.isBlank()) ? passwordAttempt : "[EMPTY]";
                     
-                    // Detailed log containing the failed credential attempt
                     String logDetails = String.format("Failed Login Attempt - Reason: %s | Entered Password: %s", 
                         exception.getMessage(), pwd);
 
@@ -185,7 +189,7 @@ public class SecurityConfig {
             )
             .sessionManagement(session -> session
                 .maximumSessions(-1)
-                .sessionRegistry(sessionRegistry)
+                .sessionRegistry(sessionRegistry) // Passed dynamically to securityFilterChain method
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
