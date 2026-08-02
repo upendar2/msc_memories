@@ -1,7 +1,8 @@
 package com.msc.memories.service;
 
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +14,9 @@ public class SystemLogService {
     private final List<String> logBuffer = Collections.synchronizedList(new ArrayList<>());
 
     public void addLog(String level, String message) {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        // Indian Standard Time (IST) timestamp
+        String timestamp = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"))
+                                        .format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         String formattedLog = String.format("[%s] %s: %s", timestamp, level, message);
         
         logBuffer.add(formattedLog);

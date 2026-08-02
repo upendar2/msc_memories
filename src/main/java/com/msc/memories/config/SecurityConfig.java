@@ -8,11 +8,9 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -23,24 +21,18 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 public class SecurityConfig {
-	private final AuditLogService auditLogService;
 
-    public SecurityConfig(AuditLogService auditLogService) {
+    private final AuditLogService auditLogService;
+    private final SessionRegistry sessionRegistry;
+
+    public SecurityConfig(AuditLogService auditLogService, SessionRegistry sessionRegistry) {
         this.auditLogService = auditLogService;
+        this.sessionRegistry = sessionRegistry;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-    @Bean
-    public SessionRegistry sessionRegistry() {
-        return new SessionRegistryImpl();
-    }
- // 2. Event publisher to notify SessionRegistry when a session is destroyed/invalidated
-    @Bean
-    public HttpSessionEventPublisher httpSessionEventPublisher() {
-        return new HttpSessionEventPublisher();
     }
 
     @Bean
@@ -58,9 +50,43 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authenticationProvider(authenticationProvider)
             .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    String ip = request.getRemoteAddr();
+                    String uri = request.getRequestURI();
+                    String username = request.getUserPrincipal() != null ? request.getUserPrincipal().getName() : "UNKNOWN";
+                    auditLogService.logActivity(username, username, "UNAUTHORIZED_ACCESS", 
+                        "unauthenticated access Detect: " + uri, ip);
 
-                // 1. Public Endpoints, Assets, and Error Routing
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write("""
+                    {
+                      "status": "error",
+                      "message": "Authentication required to access this resource"
+                    }
+                    """);
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    String username = request.getUserPrincipal() != null ? request.getUserPrincipal().getName() : "UNKNOWN";
+                    String ip = request.getRemoteAddr();
+                    String uri = request.getRequestURI();
+                    auditLogService.logActivity(username, username, "ACCESS_DENIED", 
+                        "Forbidden access attempt to: " + uri, ip);
+
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write("""
+                    {
+                      "status": "error",
+                      "message": "Access Denied: You do not have permission to access this resource"
+                    }
+                    """);
+                })
+            )
+            .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/",
                         "/index",
@@ -79,8 +105,6 @@ public class SecurityConfig {
                         "/*.html",
                         "/logo.png"
                 ).permitAll()
-
-                // 2. Admin Dashboard Access
                 .requestMatchers(
                         "/admin-dashboard",
                         "/admin-dashboard.html",
@@ -88,8 +112,6 @@ public class SecurityConfig {
                         "/admin/**",
                         "/api/admin/**"
                 ).hasAnyAuthority("ADMIN")
-
-                // 3. User Dashboard & Standard Authenticated Routes
                 .requestMatchers(
                         "/user-dashboard",
                         "/user-dashboard.html",
@@ -101,7 +123,6 @@ public class SecurityConfig {
                         "/api/user/**",
                         "/profile/**"
                 ).hasAnyAuthority("USER", "ADMIN")
-
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -118,11 +139,7 @@ public class SecurityConfig {
                             .orElse("USER");
                     String ip = request.getRemoteAddr();
 
-                    // Record DB Audit Log
                     auditLogService.logActivity(username, username, "LOGIN_SUCCESS", "User logged in via form", ip);
-
-                    // 1. SUCCESSFUL LOGIN LOG
-                    System.out.println("[AUTH SUCCESS] User logged in: " + username + " | Role: " + role);
 
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.setContentType("application/json");
@@ -142,11 +159,17 @@ public class SecurityConfig {
 
                 .failureHandler((request, response, exception) -> {
                     String usernameAttempt = request.getParameter("username");
+                    String passwordAttempt = request.getParameter("password");
                     String ip = request.getRemoteAddr();
-                    auditLogService.logActivity(usernameAttempt != null ? usernameAttempt : "UNKNOWN", "N/A", "LOGIN_FAILED", exception.getMessage(), ip);
 
-                    // 2. FAILED LOGIN LOG
-                    System.err.println("[AUTH FAILURE] Failed login attempt for ID/Email: " + usernameAttempt + " | Reason: " + exception.getMessage());
+                    String user = (usernameAttempt != null && !usernameAttempt.isBlank()) ? usernameAttempt : "UNKNOWN";
+                    String pwd = (passwordAttempt != null && !passwordAttempt.isBlank()) ? passwordAttempt : "[EMPTY]";
+                    
+                    // Detailed log containing the failed credential attempt
+                    String logDetails = String.format("Failed Login Attempt - Reason: %s | Entered Password: %s", 
+                        exception.getMessage(), pwd);
+
+                    auditLogService.logActivity(user, "N/A", "LOGIN_FAILED", logDetails, ip);
 
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
@@ -161,15 +184,19 @@ public class SecurityConfig {
                 .permitAll()
             )
             .sessionManagement(session -> session
-                    .maximumSessions(-1) // Allow multiple active sessions if needed, or set to 1
-                    .sessionRegistry(sessionRegistry()) // Register SessionRegistry
-                )
+                .maximumSessions(-1)
+                .sessionRegistry(sessionRegistry)
+            )
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .addLogoutHandler((request, response, authentication) -> {
+                    String username = authentication != null ? authentication.getName() : "ANONYMOUS";
+                    String ip = request.getRemoteAddr();
+
+                    auditLogService.logActivity(username, username, "LOGOUT_SUCCESS", "User logged out successfully", ip);
+
                     if (authentication != null) {
-                        // 3. LOGOUT LOG
-                        System.out.println("[AUTH LOGOUT] User logged out: " + authentication.getName());
+                        sessionRegistry.removeSessionInformation(request.getSession().getId());
                     }
                 })
                 .logoutSuccessUrl("/")
